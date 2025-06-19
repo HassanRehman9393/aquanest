@@ -1,6 +1,31 @@
-require('dotenv').config();
+const path = require('path');
+const dotenv = require('dotenv');
+
+// Load environment variables with explicit path
+const result = dotenv.config({ path: path.join(__dirname, '.env') });
+
+if (result.error) {
+  console.error('Error loading .env file:', result.error);
+  console.log('Setting default environment variables...');
+  // Set default values if .env file fails to load
+  process.env.PORT = process.env.PORT || '5000';
+  process.env.MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/aquanest';
+  process.env.JWT_SECRET = process.env.JWT_SECRET || 'aquanest-super-secret-jwt-key-for-development-2025';
+  process.env.JWT_EXPIRE = process.env.JWT_EXPIRE || '7d';  process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+  process.env.FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+}
+
+// If parsed variables are empty, set defaults
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'undefined') {
+  process.env.PORT = '5000';
+  process.env.MONGODB_URI = 'mongodb://localhost:27017/aquanest';
+  process.env.JWT_SECRET = 'aquanest-super-secret-jwt-key-for-development-2025';
+  process.env.JWT_EXPIRE = '7d';
+  process.env.NODE_ENV = 'development';
+  process.env.FRONTEND_URL = 'http://localhost:3000';
+}
+
 var express = require('express');
-var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
@@ -15,7 +40,7 @@ const errorHandler = require('./middleware/errorHandler');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var productsRouter = require('./routes/products');
-//var authRouter = require('./routes/auth');
+var authRouter = require('./routes/auth');
 var ordersRouter = require('./routes/orders');
 var adminRouter = require('./routes/admin');
 
@@ -39,7 +64,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api/products', productsRouter);
-//app.use('/api/auth', authRouter);
+app.use('/api/auth', authRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/admin', adminRouter);
 
