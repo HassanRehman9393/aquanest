@@ -42,6 +42,7 @@ var usersRouter = require('./routes/users');
 var productsRouter = require('./routes/products');
 var authRouter = require('./routes/auth');
 var ordersRouter = require('./routes/orders');
+var adminRouter = require('./routes/admin');
 
 var app = express();
 
@@ -65,6 +66,7 @@ app.use('/users', usersRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/api/admin', adminRouter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

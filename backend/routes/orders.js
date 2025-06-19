@@ -232,4 +232,90 @@ router.put('/:id/status', protect, admin, async (req, res, next) => {
   }
 });
 
+// @desc    Cancel order
+// @route   PUT /api/orders/:id/cancel
+// @access  Private
+router.put('/:id/cancel', protect, async (req, res, next) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    // Check if user owns this order
+    if (order.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to cancel this order'
+      });
+    }
+
+    // Can only cancel pending orders
+    if (order.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: 'Order cannot be cancelled at this stage'
+      });
+    }
+
+    // Restore product stock
+    for (let item of order.orderItems) {
+      await Product.findByIdAndUpdate(
+        item.product,
+        { $inc: { stock: item.quantity } }
+      );
+    }
+
+    order.status = 'cancelled';
+    const updatedOrder = await order.save();
+
+    res.json({
+      success: true,
+      message: 'Order cancelled successfully',
+      data: updatedOrder
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @desc    Get order statistics for user
+// @route   GET /api/orders/stats
+// @access  Private
+router.get('/stats', protect, async (req, res, next) => {
+  try {
+    const stats = await Order.aggregate([
+      { $match: { user: req.user._id } },
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 },
+          totalAmount: { $sum: '$totalPrice' }
+        }
+      }
+    ]);
+
+    const totalOrders = await Order.countDocuments({ user: req.user._id });
+    const totalSpent = await Order.aggregate([
+      { $match: { user: req.user._id, isPaid: true } },
+      { $group: { _id: null, total: { $sum: '$totalPrice' } } }
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        totalOrders,
+        totalSpent: totalSpent.length > 0 ? totalSpent[0].total : 0,
+        statusBreakdown: stats
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;
