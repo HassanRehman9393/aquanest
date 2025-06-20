@@ -125,7 +125,7 @@ export default function HomePage() {
             >
                 <div className="relative z-10">
                 <img
-                  src="/bottles.webp" 
+                  src="/newHero.webp" 
                   alt="Premium water bottles collection"
                   className="rounded-2xl shadow-2xl object-cover w-full h-96"
                 />

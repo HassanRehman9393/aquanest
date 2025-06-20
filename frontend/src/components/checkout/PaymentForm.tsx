@@ -116,20 +116,19 @@ export function PaymentForm({ onContinue, onBack }: PaymentFormProps) {
     }
     return v;
   };
-
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="w-full max-w-4xl mx-auto px-4 sm:px-0">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Payment Form */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
+        <div className="lg:col-span-2 order-2 lg:order-1">
+          <Card className="shadow-lg border-0 bg-white dark:bg-slate-800">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
+                <CreditCard className="h-5 w-5 sm:h-6 sm:w-6" />
                 Payment Information
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Payment Method Selection */}
                 <div>
@@ -137,27 +136,27 @@ export function PaymentForm({ onContinue, onBack }: PaymentFormProps) {
                   <RadioGroup
                     value={selectedPaymentType}
                     onValueChange={(value) => register('type').onChange({ target: { value } })}
-                    className="mt-2"
+                    className="mt-3 space-y-3"
                   >
-                    <div className="flex items-center space-x-2 p-4 border rounded-lg">
+                    <div className="flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
                       <RadioGroupItem value="card" id="card" />
-                      <Label htmlFor="card" className="flex items-center gap-2 cursor-pointer">
+                      <Label htmlFor="card" className="flex items-center gap-2 cursor-pointer flex-1">
                         <CreditCard className="h-4 w-4" />
-                        Credit/Debit Card
+                        <span className="text-sm sm:text-base">Credit/Debit Card</span>
                       </Label>
                     </div>
                     
-                    <div className="flex items-center space-x-2 p-4 border rounded-lg">
+                    <div className="flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
                       <RadioGroupItem value="paypal" id="paypal" />
-                      <Label htmlFor="paypal" className="cursor-pointer">
-                        PayPal
+                      <Label htmlFor="paypal" className="cursor-pointer flex-1">
+                        <span className="text-sm sm:text-base">PayPal</span>
                       </Label>
                     </div>
                     
-                    <div className="flex items-center space-x-2 p-4 border rounded-lg">
+                    <div className="flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
                       <RadioGroupItem value="cash_on_delivery" id="cod" />
-                      <Label htmlFor="cod" className="cursor-pointer">
-                        Cash on Delivery
+                      <Label htmlFor="cod" className="cursor-pointer flex-1">
+                        <span className="text-sm sm:text-base">Cash on Delivery</span>
                       </Label>
                     </div>
                   </RadioGroup>
@@ -171,22 +170,22 @@ export function PaymentForm({ onContinue, onBack }: PaymentFormProps) {
                     exit={{ opacity: 0, height: 0 }}
                     className="space-y-4"
                   >
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 sm:p-4">
                       <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-                        <Shield className="h-4 w-4" />
-                        <span className="text-sm font-medium">
+                        <Shield className="h-4 w-4 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm font-medium">
                           Your payment information is secure and encrypted
                         </span>
                       </div>
                     </div>
 
                     <div>
-                      <Label htmlFor="cardholderName">Cardholder Name</Label>
+                      <Label htmlFor="cardholderName" className="text-sm font-medium">Cardholder Name</Label>
                       <Input
                         id="cardholderName"
                         {...register('cardholderName')}
                         placeholder="John Doe"
-                        className={errors.cardholderName ? 'border-red-500' : ''}
+                        className={`mt-1 ${errors.cardholderName ? 'border-red-500 focus:border-red-500' : 'focus:border-blue-500'}`}
                       />
                       {errors.cardholderName && (
                         <p className="text-sm text-red-600 mt-1">
@@ -196,9 +195,8 @@ export function PaymentForm({ onContinue, onBack }: PaymentFormProps) {
                     </div>
 
                     <div>
-                      <Label htmlFor="cardNumber">Card Number</Label>
-                      <Input
-                        id="cardNumber"
+                      <Label htmlFor="cardNumber" className="text-sm font-medium">Card Number</Label>
+                      <Input                        id="cardNumber"
                         {...register('cardNumber')}
                         placeholder="1234 5678 9012 3456"
                         maxLength={19}
@@ -206,7 +204,7 @@ export function PaymentForm({ onContinue, onBack }: PaymentFormProps) {
                           e.target.value = formatCardNumber(e.target.value);
                           register('cardNumber').onChange(e);
                         }}
-                        className={errors.cardNumber ? 'border-red-500' : ''}
+                        className={`mt-1 font-mono ${errors.cardNumber ? 'border-red-500 focus:border-red-500' : 'focus:border-blue-500'}`}
                       />
                       {errors.cardNumber && (
                         <p className="text-sm text-red-600 mt-1">
@@ -217,7 +215,7 @@ export function PaymentForm({ onContinue, onBack }: PaymentFormProps) {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="expiryDate">Expiry Date</Label>
+                        <Label htmlFor="expiryDate" className="text-sm font-medium">Expiry Date</Label>
                         <Input
                           id="expiryDate"
                           {...register('expiryDate')}
@@ -227,7 +225,7 @@ export function PaymentForm({ onContinue, onBack }: PaymentFormProps) {
                             e.target.value = formatExpiryDate(e.target.value);
                             register('expiryDate').onChange(e);
                           }}
-                          className={errors.expiryDate ? 'border-red-500' : ''}
+                          className={`mt-1 font-mono ${errors.expiryDate ? 'border-red-500 focus:border-red-500' : 'focus:border-blue-500'}`}
                         />
                         {errors.expiryDate && (
                           <p className="text-sm text-red-600 mt-1">
@@ -237,7 +235,7 @@ export function PaymentForm({ onContinue, onBack }: PaymentFormProps) {
                       </div>
 
                       <div>
-                        <Label htmlFor="cvv" className="flex items-center gap-1">
+                        <Label htmlFor="cvv" className="flex items-center gap-1 text-sm font-medium">
                           CVV
                           <Lock className="h-3 w-3" />
                         </Label>
@@ -247,7 +245,7 @@ export function PaymentForm({ onContinue, onBack }: PaymentFormProps) {
                           placeholder="123"
                           maxLength={4}
                           type="password"
-                          className={errors.cvv ? 'border-red-500' : ''}
+                          className={`mt-1 font-mono ${errors.cvv ? 'border-red-500 focus:border-red-500' : 'focus:border-blue-500'}`}
                         />
                         {errors.cvv && (
                           <p className="text-sm text-red-600 mt-1">
@@ -264,9 +262,9 @@ export function PaymentForm({ onContinue, onBack }: PaymentFormProps) {
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
-                    className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg"
+                    className="p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg"
                   >
-                    <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                    <p className="text-xs sm:text-sm text-yellow-700 dark:text-yellow-300">
                       You will be redirected to PayPal to complete your payment.
                     </p>
                   </motion.div>
@@ -277,22 +275,23 @@ export function PaymentForm({ onContinue, onBack }: PaymentFormProps) {
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
-                    className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg"
+                    className="p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg"
                   >
-                    <p className="text-sm text-green-700 dark:text-green-300">
+                    <p className="text-xs sm:text-sm text-green-700 dark:text-green-300">
                       Pay with cash when your order is delivered to your door.
                     </p>
                   </motion.div>
                 )}
 
-                {/* Action Buttons */}
-                <div className="flex items-center justify-between pt-6 border-t">
+                {/* Action Buttons - Mobile First */}
+                <div className="flex flex-col sm:flex-row items-center justify-between pt-6 border-t gap-4 sm:gap-0">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={onBack}
                     disabled={isProcessing}
-                    className="flex items-center gap-2"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 order-2 sm:order-1"
+                    size="lg"
                   >
                     <ArrowLeft className="h-4 w-4" />
                     Back to Shipping
@@ -300,8 +299,9 @@ export function PaymentForm({ onContinue, onBack }: PaymentFormProps) {
                   
                   <Button
                     type="submit"
-                    className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+                    className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2 order-1 sm:order-2"
                     disabled={!isValid || isProcessing}
+                    size="lg"
                   >
                     {isProcessing ? (
                       <>
@@ -325,18 +325,18 @@ export function PaymentForm({ onContinue, onBack }: PaymentFormProps) {
           </Card>
         </div>
 
-        {/* Order Summary */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-4">
-            <CardHeader>
-              <CardTitle>Order Total</CardTitle>
+        {/* Order Summary - Mobile First */}
+        <div className="lg:col-span-1 order-1 lg:order-2">
+          <Card className="shadow-lg border-0 bg-white dark:bg-slate-800 lg:sticky lg:top-4">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg sm:text-xl">Order Total</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <div className="text-center">
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(total)}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
                   Including taxes and shipping
                 </p>
               </div>
