@@ -58,7 +58,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/20 py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1598454269162-9d43aaa2e7ed?w=1920&h=1080&fit=crop&crop=center')] bg-cover bg-center opacity-10 dark:opacity-5"></div>
+        <div className="absolute inset-0 bg-[url('/hero_image.jpg')] bg-cover bg-center opacity-10 dark:opacity-5"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -123,13 +123,13 @@ export default function HomePage() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative"
             >
-              <div className="relative z-10">
+                <div className="relative z-10">
                 <img
-                  src="https://images.unsplash.com/photo-1564759224907-65b9d29ec419?w=600&h=400&fit=crop&crop=center"
+                  src="/bottles.webp" 
                   alt="Premium water bottles collection"
                   className="rounded-2xl shadow-2xl object-cover w-full h-96"
                 />
-              </div>
+                </div>
               <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 dark:from-blue-600 dark:to-indigo-700 rounded-2xl transform rotate-3 scale-105 opacity-20 dark:opacity-30"></div>
             </motion.div>
           </div>
@@ -199,7 +199,7 @@ export default function HomePage() {
               viewport={{ once: true }}
             >
               <img
-                src="https://images.unsplash.com/photo-1596778040944-4c9e6f37f0b0?w=500&h=400&fit=crop&crop=center"
+                src="/family_water.jpg"
                 alt="Happy family drinking water"
                 className="rounded-2xl shadow-xl object-cover w-full h-80"
               />
