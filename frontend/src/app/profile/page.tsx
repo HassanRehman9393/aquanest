@@ -51,33 +51,32 @@ export default function ProfilePage() {
     toast.success('Order history cleared!');
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-      {/* Header */}
+  return (    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+      {/* Header - Mobile Optimized */}
       <div className="bg-white dark:bg-slate-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <motion.div 
             initial="initial"
             animate="animate"
             variants={fadeInUp}
-            className="flex items-center gap-6"
+            className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6"
           >
-            <Avatar className="h-20 w-20">
+            <Avatar className="h-16 w-16 sm:h-20 sm:w-20">
               <AvatarImage src="/placeholder-avatar.jpg" />
-              <AvatarFallback className="text-xl bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
+              <AvatarFallback className="text-lg sm:text-xl bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
             
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <div className="text-center sm:text-left">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 {user?.name || 'User Profile'}
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
                 {user?.email}
               </p>
-              <div className="flex items-center gap-4 mt-2">
-                <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+              <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 mt-3">
+                <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs">
                   Premium Member
                 </Badge>
                 <div className="flex items-center gap-1 text-yellow-500">
@@ -86,7 +85,7 @@ export default function ProfilePage() {
                   <Star className="h-4 w-4 fill-current" />
                   <Star className="h-4 w-4 fill-current" />
                   <Star className="h-4 w-4" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">4.0</span>
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 ml-1">4.0</span>
                 </div>
               </div>
             </div>
@@ -94,61 +93,62 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Content - Mobile Optimized */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 lg:w-96">
-            <TabsTrigger value="orders" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:w-96 gap-1 h-auto p-1">{/* Mobile: 2 columns, SM+: 4 columns */}            <TabsTrigger value="orders" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2">
               <Package className="h-4 w-4" />
-              <span className="hidden sm:inline">Orders</span>
+              <span className="text-xs sm:text-sm">Orders</span>
             </TabsTrigger>
-            <TabsTrigger value="profile" className="flex items-center gap-2">
+            <TabsTrigger value="profile" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2">
               <User className="h-4 w-4" />
-              <span className="hidden sm:inline">Profile</span>
+              <span className="text-xs sm:text-sm">Profile</span>
             </TabsTrigger>
-            <TabsTrigger value="addresses" className="flex items-center gap-2">
+            <TabsTrigger value="addresses" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2">
               <MapPin className="h-4 w-4" />
-              <span className="hidden sm:inline">Addresses</span>
+              <span className="text-xs sm:text-sm">Address</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
+            <TabsTrigger value="settings" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2">
               <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Settings</span>
+              <span className="text-xs sm:text-sm">Settings</span>
             </TabsTrigger>
-          </TabsList>          {/* Orders Tab */}
-          <TabsContent value="orders" className="mt-8">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          </TabsList>          {/* Orders Tab - Mobile Optimized */}
+          <TabsContent value="orders" className="mt-6 sm:mt-8">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                   Order History
                 </h2>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={handleClearOrders} size="sm">
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <Button variant="outline" onClick={handleClearOrders} size="sm" className="flex-1 sm:flex-none">
                     <RefreshCw className="h-4 w-4 mr-2" />
-                    Clear History
+                    <span className="hidden sm:inline">Clear History</span>
+                    <span className="sm:hidden">Clear</span>
                   </Button>
-                  <Button variant="outline">
-                    View All Orders
+                  <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+                    <span className="hidden sm:inline">View All Orders</span>
+                    <span className="sm:hidden">All</span>
                   </Button>
                 </div>
               </div>
 
               {orders.length === 0 ? (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                <Card className="shadow-lg border-0">
+                  <CardContent className="py-8 sm:py-12 text-center">
+                    <Package className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2">
                       No orders yet
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6">
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6">
                       Start shopping to see your order history here.
                     </p>
-                    <Button onClick={() => router.push('/products')}>
+                    <Button onClick={() => router.push('/products')} size="sm" className="w-full sm:w-auto">
                       Start Shopping
                     </Button>
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid gap-6">
+                <div className="grid gap-4 sm:gap-6">
                   {orders.map((order, index) => (
                     <motion.div
                       key={order.id}
@@ -156,40 +156,40 @@ export default function ProfilePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
                     >
-                      <Card>
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
+                      <Card className="shadow-lg border-0">
+                        <CardHeader className="pb-4">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                             <div>
-                              <CardTitle className="flex items-center gap-2">
-                                <Package className="h-5 w-5" />
+                              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                                <Package className="h-4 w-4 sm:h-5 sm:w-5" />
                                 Order #{order.id}
                               </CardTitle>
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                Placed on {format(order.date, 'MMMM d, yyyy')}
+                              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                Placed on {format(order.date, 'MMM d, yyyy')}
                               </p>
                             </div>
-                            <div className="text-right">
+                            <div className="text-left sm:text-right">
                               {getStatusBadge(order.status)}
-                              <p className="text-lg font-semibold text-gray-900 dark:text-white mt-1">
+                              <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mt-1">
                                 {formatCurrency(order.total)}
                               </p>
                             </div>
                           </div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-0">
                           <div className="space-y-4">
-                            {/* Order Items */}
+                            {/* Order Items - Mobile Optimized */}
                             <div>
-                              <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                              <h4 className="font-medium text-gray-900 dark:text-white mb-2 text-sm sm:text-base">
                                 Items ({order.items.length})
                               </h4>
                               <div className="space-y-2">
                                 {order.items.map((item, itemIndex) => (
-                                  <div key={itemIndex} className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-600 dark:text-gray-400">
+                                  <div key={itemIndex} className="flex justify-between items-start sm:items-center text-xs sm:text-sm">
+                                    <span className="text-gray-600 dark:text-gray-400 flex-1 pr-2">
                                       {item.name} × {item.quantity}
                                     </span>
-                                    <span className="font-medium">
+                                    <span className="font-medium text-right">
                                       {formatCurrency(item.price * item.quantity)}
                                     </span>
                                   </div>
@@ -197,8 +197,8 @@ export default function ProfilePage() {
                               </div>
                             </div>
 
-                            {/* Order Summary */}
-                            <div className="space-y-1 pt-2 border-t text-sm">
+                            {/* Order Summary - Mobile Optimized */}
+                            <div className="space-y-1 pt-2 border-t text-xs sm:text-sm">
                               <div className="flex justify-between">
                                 <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
                                 <span>{formatCurrency(order.subtotal)}</span>

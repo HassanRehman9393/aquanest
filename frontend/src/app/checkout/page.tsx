@@ -89,11 +89,54 @@ export default function CheckoutPage() {
                 Checkout
               </h1>
             </div>
-          </div>
-
-          {/* Progress Steps */}
+          </div>          {/* Progress Steps - Mobile First */}
           <div className="mt-6">
-            <div className="flex items-center justify-between">
+            {/* Mobile: Vertical layout */}
+            <div className="block sm:hidden">
+              <div className="space-y-4">
+                {steps.map((stepItem, index) => {
+                  const Icon = stepItem.icon;
+                  const isActive = index === currentStepIndex;
+                  const isCompleted = index < currentStepIndex;
+                  
+                  return (
+                    <div key={stepItem.id} className="flex items-center">
+                      <div className={`
+                        relative flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors
+                        ${isActive 
+                          ? 'border-blue-600 bg-blue-600 text-white' 
+                          : isCompleted 
+                            ? 'border-green-500 bg-green-500 text-white'
+                            : 'border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500'
+                        }
+                      `}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      
+                      <div className="ml-3">
+                        <p className={`text-sm font-medium ${
+                          isActive ? 'text-blue-600 dark:text-blue-400' 
+                          : isCompleted ? 'text-green-600 dark:text-green-400'
+                          : 'text-gray-500 dark:text-gray-400'
+                        }`}>
+                          {stepItem.title}
+                        </p>
+                      </div>
+                      
+                      {index < steps.length - 1 && (
+                        <div className={`
+                          w-4 h-0.5 ml-auto transition-colors
+                          ${isCompleted ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}
+                        `} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Desktop: Horizontal layout */}
+            <div className="hidden sm:flex items-center justify-between">
               {steps.map((stepItem, index) => {
                 const Icon = stepItem.icon;
                 const isActive = index === currentStepIndex;

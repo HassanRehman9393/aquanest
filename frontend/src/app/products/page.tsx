@@ -97,7 +97,7 @@ export default function ProductsPage() {
       reviews: 156,
       category: 'bottles',
       size: '12oz (12 pack)',
-      image: 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=600&h=400&fit=crop&crop=center',
+      image: 'bottle2.webp',
       inStock: true,
       popular: true
     },
@@ -111,7 +111,7 @@ export default function ProductsPage() {
       reviews: 203,
       category: 'bottles',
       size: '16oz (8 pack)',
-      image: 'https://images.unsplash.com/photo-1609840114113-ba0e4cb995c8?w=600&h=400&fit=crop&crop=center',
+      image: 'hero_image.jpg',
       inStock: true,
       popular: false
     },
@@ -125,7 +125,7 @@ export default function ProductsPage() {
       reviews: 89,
       category: 'bottles',
       size: '1 Liter (6 pack)',
-      image: 'https://images.unsplash.com/photo-1625897442196-08958bcca13e?w=600&h=400&fit=crop&crop=center',
+      image: 'bottle3.avif',
       inStock: true,
       popular: true
     },
@@ -139,7 +139,7 @@ export default function ProductsPage() {
       reviews: 134,
       category: 'gallons',
       size: '3 Gallon',
-      image: 'https://images.unsplash.com/photo-1605806616949-1e87b487fc2f?w=600&h=400&fit=crop&crop=center',
+      image: 'gallon1.jpg',
       inStock: true,
       popular: false
     },
@@ -153,7 +153,7 @@ export default function ProductsPage() {
       reviews: 267,
       category: 'gallons',
       size: '5 Gallon',
-      image: 'https://images.unsplash.com/photo-1527181152855-fc03fc7949c8?w=600&h=400&fit=crop&crop=center',
+      image: 'gallon2.webp',
       inStock: true,
       popular: true
     },
@@ -167,7 +167,7 @@ export default function ProductsPage() {
       reviews: 112,
       category: 'gallons',
       size: '10 Gallon',
-      image: 'https://images.unsplash.com/photo-1619440947946-91b2b1a73439?w=600&h=400&fit=crop&crop=center',
+      image: 'gallon3.webp',
       inStock: true,
       popular: false
     },
@@ -181,7 +181,7 @@ export default function ProductsPage() {
       reviews: 89,
       category: 'dispensers',
       size: 'Countertop',
-      image: 'https://images.unsplash.com/photo-1596510915080-e3e5a99e1e2e?w=600&h=400&fit=crop&crop=center',
+      image: 'dispensor3.webp',
       inStock: true,
       popular: true
     },
@@ -195,7 +195,7 @@ export default function ProductsPage() {
       reviews: 156,
       category: 'dispensers',
       size: 'Floor Standing',
-      image: 'https://images.unsplash.com/photo-1572384780834-12ac4626fc64?w=600&h=400&fit=crop&crop=center',
+      image: 'dispensor1.webp',
       inStock: true,
       popular: true
     },
@@ -209,7 +209,7 @@ export default function ProductsPage() {
       reviews: 67,
       category: 'dispensers',
       size: 'Commercial Grade',
-      image: 'https://images.unsplash.com/photo-1590479773265-7464e5d48118?w=600&h=400&fit=crop&crop=center',
+      image: 'dispensor2.jpg',
       inStock: true,
       popular: false
     }

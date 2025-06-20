@@ -73,7 +73,7 @@ const mockTrackingData = {
   ]
 };
 
-// Mock map component (in a real app, you'd use Google Maps or Mapbox)
+// Mock map component - Mobile Optimized
 const MockDeliveryMap = () => {
   const [currentPosition, setCurrentPosition] = useState({ x: 25, y: 60 });
 
@@ -89,7 +89,7 @@ const MockDeliveryMap = () => {
   }, []);
 
   return (
-    <div className="relative w-full h-80 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+    <div className="relative w-full h-60 sm:h-80 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
       {/* Mock map background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20">
         {/* Mock roads */}
@@ -97,7 +97,7 @@ const MockDeliveryMap = () => {
           <path
             d="M0,100 Q200,80 400,120 T800,100"
             stroke="#e5e7eb"
-            strokeWidth="8"
+            strokeWidth="6"
             fill="none"
             className="dark:stroke-gray-600"
           />
@@ -256,13 +256,12 @@ export default function TrackingPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-      {/* Header */}
+  return (    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+      {/* Header - Mobile Optimized */}
       <div className="bg-white dark:bg-slate-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
               <Button
                 variant="ghost"
                 size="sm"
@@ -273,9 +272,9 @@ export default function TrackingPage() {
                 <span>Back</span>
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                   Track Your Delivery
-                </h1>                <p className="text-gray-600 dark:text-gray-400">
+                </h1>                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                   Order #{trackingData.orderId}
                 </p>
               </div>
@@ -285,7 +284,8 @@ export default function TrackingPage() {
               onClick={refreshTracking}
               disabled={isRefreshing}
               variant="outline"
-              className="flex items-center gap-2"
+              size="sm"
+              className="flex items-center gap-2 w-full sm:w-auto"
             >
               <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               Refresh
@@ -294,10 +294,10 @@ export default function TrackingPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Tracking Info */}
-          <div className="lg:col-span-2 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          {/* Main Tracking Info - Mobile First */}
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6 order-2 lg:order-1">
             {/* Status Card */}
             <Card>
               <CardHeader>
