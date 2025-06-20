@@ -9,12 +9,45 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProductBentoGrid, ProductBentoCard } from '@/components/ui/product-bento-grid';
+import { useCartStore } from '@/store/cartStore';
+import { Product } from '@/types/cart';
+import { toast } from 'sonner';
 
 export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedSize, setSelectedSize] = useState('all');
   const [priceRange, setPriceRange] = useState('all');
+  const { addItem, openCart } = useCartStore();
+  // Add to cart function with animations
+  const handleAddToCart = (product: any) => {
+    if (!product.name || !product.description || typeof product.price !== 'number') {
+      toast.error('Invalid product data');
+      return;
+    }
+
+    const cartProduct: Product = {
+      id: product.id.toString(),
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      image: product.image || '',
+      category: product.category === 'bottles' || product.category === 'gallons' ? 'water' : 'accessories',
+      inStock: product.inStock || false,
+      volume: product.size || '',
+      features: product.category === 'dispensers' ? ['Advanced Features'] : ['BPA-Free', 'Purified Water']
+    };
+
+    addItem(cartProduct, 1);
+    
+    // Show success toast
+    toast.success(`${product.name} added to cart!`, {
+      action: {
+        label: 'View Cart',
+        onClick: () => openCart(),
+      },
+    });
+  };
 
   const fadeInUp = {
     initial: { opacity: 0, y: 30 },
@@ -326,6 +359,7 @@ export default function ProductsPage() {
                     size={product.size}
                     Icon={getProductIcon(product.category)}
                     cta="Add to Cart"
+                    onCtaClick={() => handleAddToCart(product)}
                     background={
                       <img
                         src={product.image}

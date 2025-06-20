@@ -2,18 +2,53 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Package, Settings, CreditCard, MapPin, Bell, Shield, Heart, Star, Calendar, Truck, Eye, RefreshCw } from 'lucide-react';
+import { User, Package, Settings, CreditCard, MapPin, Bell, Shield, Heart, Star, Calendar, Truck, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
-import { useOrderStore } from '@/store/orderStore';
 import { formatCurrency } from '@/lib/utils';
 import { format } from 'date-fns';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+
+// Mock order data - in a real app, this would come from an API
+const mockOrders = [
+  {
+    id: 'AQ123456',
+    date: new Date('2024-01-15'),
+    status: 'delivered',
+    total: 89.97,
+    items: [
+      { name: 'Premium Water Bottles - 16oz', quantity: 2, price: 12.99 },
+      { name: '5-Gallon Water Jug', quantity: 2, price: 32.99 }
+    ],
+    estimatedDelivery: new Date('2024-01-18'),
+    trackingNumber: 'TRK789012345'
+  },
+  {
+    id: 'AQ123457',
+    date: new Date('2024-01-10'),
+    status: 'shipped',
+    total: 64.98,
+    items: [
+      { name: 'Premium Water Bottles - 12oz', quantity: 3, price: 8.99 },
+      { name: '3-Gallon Water Jug', quantity: 1, price: 24.99 }
+    ],
+    estimatedDelivery: new Date('2024-01-13'),
+    trackingNumber: 'TRK789012346'
+  },
+  {
+    id: 'AQ123458',
+    date: new Date('2024-01-05'),
+    status: 'processing',
+    total: 149.99,
+    items: [
+      { name: 'Countertop Water Dispenser', quantity: 1, price: 149.99 }
+    ],
+    estimatedDelivery: new Date('2024-01-08')
+  }
+];
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -32,23 +67,12 @@ const getStatusBadge = (status: string) => {
 
 export default function ProfilePage() {
   const { user } = useAuth();
-  const { orders, clearOrders } = useOrderStore();
   const [activeTab, setActiveTab] = useState('orders');
-  const router = useRouter();
 
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.6 }
-  };
-
-  const handleTrackOrder = (trackingNumber: string, orderId: string) => {
-    router.push(`/tracking?tracking=${trackingNumber}&order=${orderId}`);
-  };
-
-  const handleClearOrders = () => {
-    clearOrders();
-    toast.success('Order history cleared!');
   };
 
   return (
@@ -114,148 +138,108 @@ export default function ProfilePage() {
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Settings</span>
             </TabsTrigger>
-          </TabsList>          {/* Orders Tab */}
+          </TabsList>
+
+          {/* Orders Tab */}
           <TabsContent value="orders" className="mt-8">
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                   Order History
                 </h2>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={handleClearOrders} size="sm">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Clear History
-                  </Button>
-                  <Button variant="outline">
-                    View All Orders
-                  </Button>
-                </div>
+                <Button variant="outline">
+                  View All Orders
+                </Button>
               </div>
 
-              {orders.length === 0 ? (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                      No orders yet
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6">
-                      Start shopping to see your order history here.
-                    </p>
-                    <Button onClick={() => router.push('/products')}>
-                      Start Shopping
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid gap-6">
-                  {orders.map((order, index) => (
-                    <motion.div
-                      key={order.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <Card>
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <CardTitle className="flex items-center gap-2">
-                                <Package className="h-5 w-5" />
-                                Order #{order.id}
-                              </CardTitle>
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                Placed on {format(order.date, 'MMMM d, yyyy')}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              {getStatusBadge(order.status)}
-                              <p className="text-lg font-semibold text-gray-900 dark:text-white mt-1">
-                                {formatCurrency(order.total)}
-                              </p>
+              <div className="grid gap-6">
+                {mockOrders.map((order, index) => (
+                  <motion.div
+                    key={order.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <CardTitle className="flex items-center gap-2">
+                              <Package className="h-5 w-5" />
+                              Order #{order.id}
+                            </CardTitle>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              Placed on {format(order.date, 'MMMM d, yyyy')}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            {getStatusBadge(order.status)}
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white mt-1">
+                              {formatCurrency(order.total)}
+                            </p>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {/* Order Items */}
+                          <div>
+                            <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                              Items ({order.items.length})
+                            </h4>
+                            <div className="space-y-2">
+                              {order.items.map((item, itemIndex) => (
+                                <div key={itemIndex} className="flex justify-between items-center text-sm">
+                                  <span className="text-gray-600 dark:text-gray-400">
+                                    {item.name} × {item.quantity}
+                                  </span>
+                                  <span className="font-medium">
+                                    {formatCurrency(item.price * item.quantity)}
+                                  </span>
+                                </div>
+                              ))}
                             </div>
                           </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            {/* Order Items */}
-                            <div>
-                              <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                                Items ({order.items.length})
-                              </h4>
-                              <div className="space-y-2">
-                                {order.items.map((item, itemIndex) => (
-                                  <div key={itemIndex} className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-600 dark:text-gray-400">
-                                      {item.name} × {item.quantity}
-                                    </span>
-                                    <span className="font-medium">
-                                      {formatCurrency(item.price * item.quantity)}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
 
-                            {/* Order Summary */}
-                            <div className="space-y-1 pt-2 border-t text-sm">
-                              <div className="flex justify-between">
-                                <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
-                                <span>{formatCurrency(order.subtotal)}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-600 dark:text-gray-400">Shipping</span>
-                                <span>{formatCurrency(order.shipping)}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-600 dark:text-gray-400">Tax</span>
-                                <span>{formatCurrency(order.tax)}</span>
-                              </div>
+                          {/* Delivery Info */}
+                          <div className="flex items-center justify-between pt-4 border-t">
+                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                              {order.status === 'delivered' ? (
+                                <>
+                                  <Package className="h-4 w-4" />
+                                  <span className="text-sm">
+                                    Delivered on {format(order.estimatedDelivery, 'MMM d, yyyy')}
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <Truck className="h-4 w-4" />
+                                  <span className="text-sm">
+                                    Est. delivery: {format(order.estimatedDelivery, 'MMM d, yyyy')}
+                                  </span>
+                                </>
+                              )}
                             </div>
-
-                            {/* Delivery Info */}
-                            <div className="flex items-center justify-between pt-4 border-t">
-                              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                                {order.status === 'delivered' ? (
-                                  <>
-                                    <Package className="h-4 w-4" />
-                                    <span className="text-sm">
-                                      Delivered on {format(order.estimatedDelivery, 'MMM d, yyyy')}
-                                    </span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Truck className="h-4 w-4" />
-                                    <span className="text-sm">
-                                      Est. delivery: {format(order.estimatedDelivery, 'MMM d, yyyy')}
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                              
-                              <div className="flex gap-2">
-                                {order.trackingNumber && (
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => handleTrackOrder(order.trackingNumber!, order.id)}
-                                  >
-                                    <Truck className="h-4 w-4 mr-2" />
-                                    Track Order
-                                  </Button>
-                                )}
+                            
+                            <div className="flex gap-2">
+                              {order.trackingNumber && (
                                 <Button variant="outline" size="sm">
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  View Details                                </Button>
-                              </div>
+                                  <Truck className="h-4 w-4 mr-2" />
+                                  Track Order
+                                </Button>
+                              )}
+                              <Button variant="outline" size="sm">
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Details
+                              </Button>
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </TabsContent>
 

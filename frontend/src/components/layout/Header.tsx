@@ -7,9 +7,11 @@ import { motion } from 'framer-motion';
 import { Menu, X, Droplets, ShoppingCart, User, Home, Package, Info, MessageCircle, Play, Star, LogOut, Settings, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCartStore } from '@/store/cartStore';
 import { cn } from '@/lib/utils';
 
 const Header = () => {
@@ -18,8 +20,7 @@ const Header = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
-
-  const navigation = [
+  const { itemCount, toggleCart } = useCartStore();  const navigation = [
     { name: 'Home', href: '/', icon: Home },
     { name: 'Products', href: '/products', icon: Package },
     { name: 'About Us', href: '/about', icon: Info },
@@ -113,13 +114,18 @@ const Header = () => {
             </div>
           </div>          {/* Desktop Actions with Tubelight Style */}
           <div className="hidden md:flex items-center">
-            <div className="flex items-center gap-2 bg-white/10 dark:bg-gray-800/10 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-lg py-1 px-1 rounded-full shadow-lg mr-4">
-              <Button 
+            <div className="flex items-center gap-2 bg-white/10 dark:bg-gray-800/10 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-lg py-1 px-1 rounded-full shadow-lg mr-4">              <Button 
                 variant="ghost" 
                 size="sm" 
+                onClick={toggleCart}
                 className="relative px-4 py-2 rounded-full hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-all duration-300"
               >
                 <ShoppingCart className="h-4 w-4" />
+                {itemCount > 0 && (
+                  <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                    {itemCount}
+                  </Badge>
+                )}
               </Button>
               <ThemeToggle />
             </div><div className="bg-white/10 dark:bg-gray-800/10 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-lg rounded-full shadow-lg">
@@ -220,14 +226,22 @@ const Header = () => {
                 );
               })}              {/* Mobile Actions */}
               <div className="flex items-center space-x-2 px-4 py-2 mt-4">
-                <div className="flex items-center gap-2 bg-white/20 dark:bg-gray-800/20 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-lg py-1 px-1 rounded-full shadow-lg flex-1">
-                  <Button 
+                <div className="flex items-center gap-2 bg-white/20 dark:bg-gray-800/20 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-lg py-1 px-1 rounded-full shadow-lg flex-1">                  <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="flex-1 rounded-full hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-all duration-300"
+                    onClick={() => {
+                      toggleCart();
+                      setIsMenuOpen(false);
+                    }}
+                    className="relative flex-1 rounded-full hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-all duration-300"
                   >
                     <ShoppingCart className="h-4 w-4 mr-2" />
                     Cart
+                    {itemCount > 0 && (
+                      <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                        {itemCount}
+                      </Badge>
+                    )}
                   </Button>
                   
                   {isAuthenticated ? (

@@ -31,6 +31,7 @@ const ProductBentoCard = ({
   description,
   href,
   cta,
+  onCtaClick,
   price,
   originalPrice,
   category,
@@ -43,11 +44,12 @@ const ProductBentoCard = ({
   description: string;
   href?: string;
   cta: string;
+  onCtaClick?: () => void;
   price: number;
   originalPrice?: number | null;
   category: string;
   size?: string;
-}) => (  <div
+}) => (<div
     key={name}
     className={cn(
       "group relative col-span-1 flex flex-col overflow-hidden rounded-xl",
@@ -110,12 +112,11 @@ const ProductBentoCard = ({
             </span>
           )}
         </div>
-      </div>
-
-      {/* Sticky CTA Button - Always Visible */}
+      </div>      {/* Sticky CTA Button - Always Visible */}
       <div className="mt-4">
         <Button 
           size="sm" 
+          onClick={onCtaClick}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200"
         >
           {cta}
