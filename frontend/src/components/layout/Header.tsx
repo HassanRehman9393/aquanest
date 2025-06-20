@@ -2,17 +2,23 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Menu, X, Droplets, ShoppingCart, User, Home, Package, Info, MessageCircle, Play, Star } from 'lucide-react';
+import { Menu, X, Droplets, ShoppingCart, User, Home, Package, Info, MessageCircle, Play, Star, LogOut, Settings, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('Home');
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, isAuthenticated, logout } = useAuth();
+
   const navigation = [
     { name: 'Home', href: '/', icon: Home },
     { name: 'Products', href: '/products', icon: Package },
@@ -30,6 +36,23 @@ const Header = () => {
       setActiveTab(currentNav.name);
     }
   }, [pathname]);
+
+  const handleAuthAction = (action: 'login' | 'register' | 'profile' | 'logout') => {
+    switch (action) {
+      case 'login':
+        router.push('/auth/login');
+        break;
+      case 'register':
+        router.push('/auth/register');
+        break;
+      case 'profile':
+        router.push('/profile');
+        break;
+      case 'logout':
+        logout();
+        break;
+    }
+  };
   return (
     <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-700/50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -98,25 +121,54 @@ const Header = () => {
               >
                 <ShoppingCart className="h-4 w-4" />
               </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="relative px-4 py-2 rounded-full hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-all duration-300"
-              >
-                <User className="h-4 w-4" />
-              </Button>
               <ThemeToggle />
+            </div><div className="bg-white/10 dark:bg-gray-800/10 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-lg rounded-full shadow-lg">
+              {isAuthenticated ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      size="sm" 
+                      className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 rounded-full px-6 py-2 font-semibold transition-all duration-300 hover:shadow-lg"
+                    >
+                      <UserCircle className="h-4 w-4 mr-2" />
+                      {user?.name || 'Profile'}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium">{user?.name}</p>
+                        <p className="text-xs text-muted-foreground">{user?.email}</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleAuthAction('profile')} className="cursor-pointer">
+                      <UserCircle className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleAuthAction('logout')} className="cursor-pointer text-red-600 dark:text-red-400">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Sign Out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button 
+                  size="sm" 
+                  onClick={() => handleAuthAction('register')}
+                  className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 rounded-full px-6 py-2 font-semibold transition-all duration-300 hover:shadow-lg"
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  Get Started
+                </Button>
+              )}
             </div>
-            <div className="bg-white/10 dark:bg-gray-800/10 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-lg rounded-full shadow-lg">
-              <Button 
-                size="sm" 
-                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 rounded-full px-6 py-2 font-semibold transition-all duration-300 hover:shadow-lg"
-              >
-                <Play className="h-4 w-4 mr-2" />
-                Get Started
-              </Button>
-            </div>
-          </div>          {/* Mobile menu button */}
+          </div>{/* Mobile menu button */}
           <div className="md:hidden">
             <div className="bg-white/10 dark:bg-gray-800/10 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-lg rounded-full shadow-lg">
               <Button
@@ -166,8 +218,7 @@ const Header = () => {
                     )}
                   </Link>
                 );
-              })}
-                {/* Mobile Actions */}
+              })}              {/* Mobile Actions */}
               <div className="flex items-center space-x-2 px-4 py-2 mt-4">
                 <div className="flex items-center gap-2 bg-white/20 dark:bg-gray-800/20 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-lg py-1 px-1 rounded-full shadow-lg flex-1">
                   <Button 
@@ -178,26 +229,65 @@ const Header = () => {
                     <ShoppingCart className="h-4 w-4 mr-2" />
                     Cart
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="flex-1 rounded-full hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-all duration-300"
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Account
-                  </Button>
+                  
+                  {isAuthenticated ? (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => {
+                        handleAuthAction('profile');
+                        setIsMenuOpen(false);
+                      }}
+                      className="flex-1 rounded-full hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-all duration-300"
+                    >
+                      <UserCircle className="h-4 w-4 mr-2" />
+                      Profile
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => {
+                        handleAuthAction('login');
+                        setIsMenuOpen(false);
+                      }}
+                      className="flex-1 rounded-full hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-all duration-300"
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Login
+                    </Button>
+                  )}
+                  
                   <div className="flex items-center">
                     <ThemeToggle />
                   </div>
                 </div>
               </div>
-              
-              <div className="px-4">
+                <div className="px-4">
                 <div className="bg-white/20 dark:bg-gray-800/20 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-lg rounded-full shadow-lg">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 rounded-full py-3 font-semibold transition-all duration-300 hover:shadow-lg">
-                    <Play className="h-4 w-4 mr-2" />
-                    Get Started
-                  </Button>
+                  {isAuthenticated ? (
+                    <Button 
+                      onClick={() => {
+                        handleAuthAction('profile');
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 rounded-full py-3 font-semibold transition-all duration-300 hover:shadow-lg"
+                    >
+                      <UserCircle className="h-4 w-4 mr-2" />
+                      {user?.name || 'Profile'}
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={() => {
+                        handleAuthAction('register');
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 rounded-full py-3 font-semibold transition-all duration-300 hover:shadow-lg"
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Get Started
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
