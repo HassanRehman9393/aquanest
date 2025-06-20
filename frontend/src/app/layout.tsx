@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { CartSidebar } from "@/components/cart/CartSidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
@@ -25,14 +26,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
         <ThemeProvider>
-          <AuthProvider>
-            <div className="min-h-screen flex flex-col">
+          <AuthProvider>            <div className="min-h-screen flex flex-col">
               <Header />
               <main className="flex-grow">
                 {children}
               </main>
               <Footer />
             </div>
+            <CartSidebar />
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
