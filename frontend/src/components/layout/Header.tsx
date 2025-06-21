@@ -37,7 +37,6 @@ const Header = () => {
       setActiveTab(currentNav.name);
     }
   }, [pathname]);
-
   const handleAuthAction = (action: 'login' | 'register' | 'profile' | 'logout') => {
     switch (action) {
       case 'login':
@@ -47,7 +46,12 @@ const Header = () => {
         router.push('/auth/register');
         break;
       case 'profile':
-        router.push('/profile');
+        // Check if user is admin and redirect to admin dashboard, otherwise go to profile
+        if (user?.role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/profile');
+        }
         break;
       case 'logout':
         logout();
@@ -139,23 +143,27 @@ const Header = () => {
                       <UserCircle className="h-4 w-4 mr-2" />
                       {user?.name || 'Profile'}
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
+                  </DropdownMenuTrigger>                  <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium">{user?.name}</p>
                         <p className="text-xs text-muted-foreground">{user?.email}</p>
+                        {user?.role === 'admin' && (
+                          <Badge variant="outline" className="text-xs w-fit">Admin</Badge>
+                        )}
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => handleAuthAction('profile')} className="cursor-pointer">
                       <UserCircle className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
+                      <span>{user?.role === 'admin' ? 'Admin Dashboard' : 'Profile'}</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </DropdownMenuItem>
+                    {user?.role !== 'admin' && (
+                      <DropdownMenuItem className="cursor-pointer">
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Settings</span>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => handleAuthAction('logout')} className="cursor-pointer text-red-600 dark:text-red-400">
                       <LogOut className="mr-2 h-4 w-4" />
@@ -253,9 +261,8 @@ const Header = () => {
                         setIsMenuOpen(false);
                       }}
                       className="flex-1 rounded-full hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-all duration-300"
-                    >
-                      <UserCircle className="h-4 w-4 mr-2" />
-                      Profile
+                    >                      <UserCircle className="h-4 w-4 mr-2" />
+                      {user?.role === 'admin' ? 'Admin Panel' : 'Profile'}
                     </Button>
                   ) : (
                     <Button 
@@ -279,8 +286,7 @@ const Header = () => {
               </div>
                 <div className="px-4">
                 <div className="bg-white/20 dark:bg-gray-800/20 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-lg rounded-full shadow-lg">
-                  {isAuthenticated ? (
-                    <Button 
+                  {isAuthenticated ? (                    <Button 
                       onClick={() => {
                         handleAuthAction('profile');
                         setIsMenuOpen(false);
@@ -288,7 +294,7 @@ const Header = () => {
                       className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 rounded-full py-3 font-semibold transition-all duration-300 hover:shadow-lg"
                     >
                       <UserCircle className="h-4 w-4 mr-2" />
-                      {user?.name || 'Profile'}
+                      {user?.role === 'admin' ? 'Admin Panel' : user?.name || 'Profile'}
                     </Button>
                   ) : (
                     <Button 
