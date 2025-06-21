@@ -29,6 +29,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -461,20 +462,19 @@ export default function CustomersPage() {
       </div>
     );
   }
-
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
-          <p className="text-gray-600">Manage your customer relationships</p>
-        </div>
+      <AdminPageHeader
+        title="Customers"
+        description="Manage your customer relationships"
+        icon={Users}
+      >
         <Button>
           <UserPlus className="h-4 w-4 mr-2" />
           Add Customer
         </Button>
-      </div>
+      </AdminPageHeader>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -317,9 +317,13 @@ export default function AdminDashboard() {
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.6 }
   };
-
   return (
-    <div className="space-y-6">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-6"
+    >
       {/* Header */}
       <motion.div
         initial="initial"
@@ -562,14 +566,13 @@ export default function AdminDashboard() {
         <motion.div variants={fadeInUp}>
           <Card>
             <CardHeader>
-              <CardTitle>Order Status Distribution</CardTitle>
-            </CardHeader>
+              <CardTitle>Order Status Distribution</CardTitle>            </CardHeader>
             <CardContent>
               <OrderStatusChart data={dashboardStats.orderStatusDistribution} />
             </CardContent>
           </Card>
         </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

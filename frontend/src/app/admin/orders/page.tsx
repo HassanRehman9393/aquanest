@@ -28,6 +28,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAdminStore } from '@/store/adminStore';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminOrder } from '@/types/admin';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -399,20 +400,19 @@ export default function OrdersPage() {
       </div>
     );
   }
-
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
-          <p className="text-gray-600">Manage and track customer orders</p>
-        </div>
+      <AdminPageHeader
+        title="Orders"
+        description="Manage and track customer orders"
+        icon={Package}
+      >
         <Button onClick={exportOrders}>
           <Download className="h-4 w-4 mr-2" />
           Export
         </Button>
-      </div>
+      </AdminPageHeader>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">

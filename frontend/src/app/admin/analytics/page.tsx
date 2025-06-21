@@ -11,7 +11,8 @@ import {
   DollarSign,
   Calendar,
   Download,
-  Filter
+  Filter,
+  BarChart3
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -31,6 +32,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useAdminStore } from '@/store/adminStore';
 import { format, subDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -224,15 +226,14 @@ export default function AnalyticsPage() {
     a.click();
     window.URL.revokeObjectURL(url);
   };
-
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
-          <p className="text-gray-600">Track your business performance and insights</p>
-        </div>
+      <AdminPageHeader
+        title="Analytics"
+        description="Track your business performance and insights"
+        icon={BarChart3}
+      >
         <div className="flex items-center gap-2">
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger className="w-40">
@@ -250,10 +251,15 @@ export default function AnalyticsPage() {
             Export
           </Button>
         </div>
-      </div>
+      </AdminPageHeader>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+      >
         <MetricCard
           title="Total Revenue"
           value={`$${dashboardStats?.totalRevenue.toLocaleString() || '0'}`}
@@ -275,17 +281,19 @@ export default function AnalyticsPage() {
           icon={Users}
           isLoading={statsLoading}
         />
-        <MetricCard
-          title="Total Products"
+        <MetricCard          title="Total Products"
           value={dashboardStats?.totalProducts.toLocaleString() || '0'}
           change={2.1}
           icon={Package}
           isLoading={statsLoading}
         />
-      </div>
-
-      {/* Charts */}
-      <Tabs defaultValue="revenue">
+      </motion.div>      {/* Charts */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
+        <Tabs defaultValue="revenue">
         <TabsList>
           <TabsTrigger value="revenue">Revenue Trends</TabsTrigger>
           <TabsTrigger value="orders">Order Trends</TabsTrigger>
@@ -433,9 +441,9 @@ export default function AnalyticsPage() {
                 )}
               </div>
             </CardContent>
-          </Card>
-        </TabsContent>
+          </Card>        </TabsContent>
       </Tabs>
+      </motion.div>
     </div>
   );
 }

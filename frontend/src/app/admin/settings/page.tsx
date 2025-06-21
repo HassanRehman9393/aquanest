@@ -26,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { toast } from 'react-hot-toast';
 
@@ -163,16 +164,14 @@ export default function SettingsPage() {
       }
     }));
   };
-
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-600">Manage your admin preferences and system configuration</p>
-        </div>
-      </div>
+      <AdminPageHeader
+        title="Settings"
+        description="Manage your admin preferences and system configuration"
+        icon={Settings}
+      />
 
       <Tabs defaultValue="profile" className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">

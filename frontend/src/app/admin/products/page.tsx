@@ -25,6 +25,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useAdminStore } from '@/store/adminStore';
 import { ProductFormData, AdminProduct } from '@/types/admin';
 import { formatCurrency } from '@/lib/utils';
@@ -402,36 +403,25 @@ export default function ProductsPage() {
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.6 }
   };
-
   return (
     <div className="space-y-6">
       {/* Header */}
-      <motion.div
-        initial="initial"
-        animate="animate"
-        variants={fadeInUp}
-        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+      <AdminPageHeader
+        title="Products"
+        description="Manage your product catalog"
+        icon={Package}
       >
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Products
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Manage your product catalog
-          </p>
-        </div>
-        
         <Button
           onClick={() => {
             setEditingProduct(undefined);
             setIsDialogOpen(true);
           }}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Product
         </Button>
-      </motion.div>
+      </AdminPageHeader>
 
       {/* Filters */}
       <motion.div
