@@ -1,13 +1,21 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   // Performance optimizations
   compress: true,
   poweredByHeader: false,
-  
   // TypeScript and module resolution
   typescript: {
     ignoreBuildErrors: false,
+  },
+    // Webpack configuration for module resolution
+  webpack: (config: any) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve(__dirname, 'src'),
+    };
+    return config;
   },
   
   // Experimental features for better performance
