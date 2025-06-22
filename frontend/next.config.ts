@@ -4,7 +4,13 @@ const nextConfig: NextConfig = {
   // Performance optimizations
   compress: true,
   poweredByHeader: false,
-    // Experimental features for better performance
+  
+  // TypeScript and module resolution
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  
+  // Experimental features for better performance
   experimental: {
     optimizePackageImports: [
       'lucide-react', 
