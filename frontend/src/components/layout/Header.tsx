@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, memo, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Menu, X, Droplets, ShoppingCart, User, Home, Package, Info, MessageCircle, Play, Star, LogOut, Settings, UserCircle } from 'lucide-react';
+import { Menu, X, Droplets, ShoppingCart, User, Home, Package, Info, MessageCircle, Star, LogOut, Settings, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Badge } from '@/components/ui/badge';
@@ -14,30 +14,60 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCartStore } from '@/store/cartStore';
 import { cn } from '@/lib/utils';
 
-const Header = () => {
+// Memoized navigation items to prevent recreation on every render
+const navigationItems = [
+  { name: 'Home', href: '/', icon: Home },
+  { name: 'Products', href: '/products', icon: Package },
+  { name: 'About Us', href: '/about', icon: Info },
+  { name: 'Testimonials', href: '/testimonials', icon: Star },
+  { name: 'Contact', href: '/contact', icon: MessageCircle },
+];
+
+// Memoized navigation link component
+const NavigationLink = memo(({ item, isActive, onClick }: { 
+  item: typeof navigationItems[0]; 
+  isActive: boolean; 
+  onClick?: () => void;
+}) => {
+  const Icon = item.icon;
+  
+  return (
+    <Link
+      href={item.href}
+      onClick={onClick}
+      prefetch={true}
+      className={cn(
+        "flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-blue-50 dark:hover:bg-blue-900/20",
+        isActive
+          ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"
+          : "text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+      )}
+    >
+      <Icon className="h-4 w-4" />
+      <span>{item.name}</span>
+    </Link>
+  );
+});
+
+NavigationLink.displayName = 'NavigationLink';
+
+const Header = memo(() => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('Home');
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
-  const { itemCount, toggleCart } = useCartStore();  const navigation = [
-    { name: 'Home', href: '/', icon: Home },
-    { name: 'Products', href: '/products', icon: Package },
-    { name: 'About Us', href: '/about', icon: Info },
-    { name: 'Testimonials', href: '/testimonials', icon: Star },
-    { name: 'Contact', href: '/contact', icon: MessageCircle },
-  ];
+  const itemCount = useCartStore(state => state.itemCount);
+  const toggleCart = useCartStore(state => state.toggleCart);
 
-  const isActive = (path: string) => pathname === path;
+  // Memoized active path checker
+  const isActive = useCallback((path: string) => pathname === path, [pathname]);
 
-  // Update active tab based on current pathname
-  useEffect(() => {
-    const currentNav = navigation.find(nav => nav.href === pathname);
-    if (currentNav) {
-      setActiveTab(currentNav.name);
-    }
-  }, [pathname]);
-  const handleAuthAction = (action: 'login' | 'register' | 'profile' | 'logout') => {
+  // Memoized close menu handler
+  const closeMenu = useCallback(() => setIsMenuOpen(false), []);
+  // Memoized auth actions with improved performance
+  const handleAuthAction = useCallback((action: 'login' | 'register' | 'profile' | 'logout') => {
+    closeMenu();
+    
     switch (action) {
       case 'login':
         router.push('/auth/login');
@@ -57,7 +87,11 @@ const Header = () => {
         logout();
         break;
     }
-  };
+  }, [router, user?.role, logout, closeMenu]);
+
+  const handleMenuToggle = useCallback(() => {
+    setIsMenuOpen(prev => !prev);
+  }, []);
   return (
     <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-700/50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -75,7 +109,7 @@ const Header = () => {
           </Link>          {/* Desktop Navigation with Tubelight Style */}
           <div className="hidden md:flex">
             <div className="flex items-center gap-2 bg-white/10 dark:bg-gray-800/10 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-lg py-1 px-1 rounded-full shadow-lg">
-              {navigation.map((item) => {
+              {navigationItems.map((item) => {
                 const Icon = item.icon;
                 const isItemActive = isActive(item.href);
 
@@ -83,7 +117,7 @@ const Header = () => {
                   <Link
                     key={item.name}
                     href={item.href}
-                    onClick={() => setActiveTab(item.name)}
+                    prefetch={true}
                     className={cn(
                       "relative cursor-pointer text-sm font-semibold px-6 py-2 rounded-full transition-all duration-300",
                       "text-gray-700/80 dark:text-gray-300/80 hover:text-blue-600 dark:hover:text-blue-400",
@@ -171,13 +205,11 @@ const Header = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              ) : (
-                <Button 
+              ) : (                <Button 
                   size="sm" 
                   onClick={() => handleAuthAction('register')}
                   className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 rounded-full px-6 py-2 font-semibold transition-all duration-300 hover:shadow-lg"
                 >
-                  <Play className="h-4 w-4 mr-2" />
                   Get Started
                 </Button>
               )}
@@ -188,7 +220,7 @@ const Header = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                onClick={handleMenuToggle}
                 className="rounded-full p-2 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-all duration-300"
               >
                 {isMenuOpen ? (
@@ -199,9 +231,7 @@ const Header = () => {
               </Button>
             </div>
           </div>
-        </div>
-
-        {/* Mobile Navigation */}
+        </div>        {/* Mobile Navigation */}
         {isMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -210,20 +240,21 @@ const Header = () => {
             className="md:hidden border-t border-gray-200/50 dark:border-gray-700/50 py-4 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md rounded-b-2xl"
           >
             <div className="flex flex-col space-y-2">
-              {navigation.map((item) => {
+              {navigationItems.map((item) => {
                 const Icon = item.icon;
                 const isItemActive = isActive(item.href);
                   return (
                   <Link
                     key={item.name}
                     href={item.href}
+                    prefetch={true}
                     className={cn(
                       "flex items-center space-x-3 px-4 py-3 text-base font-medium rounded-xl mx-2 transition-all duration-300",
                       isItemActive
                         ? 'text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-900/30 shadow-sm border border-blue-100 dark:border-blue-800'
                         : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50/50 dark:hover:bg-gray-800/50'
                     )}
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={closeMenu}
                   >
                     <Icon size={18} strokeWidth={2} />
                     <span>{item.name}</span>
@@ -232,7 +263,7 @@ const Header = () => {
                     )}
                   </Link>
                 );
-              })}              {/* Mobile Actions */}
+              })}{/* Mobile Actions */}
               <div className="flex items-center space-x-2 px-4 py-2 mt-4">
                 <div className="flex items-center gap-2 bg-white/20 dark:bg-gray-800/20 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-lg py-1 px-1 rounded-full shadow-lg flex-1">                  <Button 
                     variant="ghost" 
@@ -296,15 +327,13 @@ const Header = () => {
                       <UserCircle className="h-4 w-4 mr-2" />
                       {user?.role === 'admin' ? 'Admin Panel' : user?.name || 'Profile'}
                     </Button>
-                  ) : (
-                    <Button 
+                  ) : (                    <Button 
                       onClick={() => {
                         handleAuthAction('register');
                         setIsMenuOpen(false);
                       }}
                       className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 rounded-full py-3 font-semibold transition-all duration-300 hover:shadow-lg"
                     >
-                      <Play className="h-4 w-4 mr-2" />
                       Get Started
                     </Button>
                   )}
@@ -312,10 +341,11 @@ const Header = () => {
               </div>
             </div>
           </motion.div>
-        )}
-      </div>
+        )}      </div>
     </header>
   );
-};
+});
+
+Header.displayName = 'Header';
 
 export default Header;

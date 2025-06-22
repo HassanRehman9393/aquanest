@@ -3,10 +3,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { SafeImage } from '@/components/ui/SafeImage';
 import { useCartStore } from '@/store/cartStore';
 import { formatCurrency } from '@/lib/utils';
 
@@ -61,10 +61,9 @@ export function CartSummary({ onContinue }: CartSummaryProps) {
                     className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow"
                   >
                     {/* Mobile: Product Image and Details Container */}
-                    <div className="flex items-start gap-4 w-full sm:flex-1">
-                      {/* Product Image */}
+                    <div className="flex items-start gap-4 w-full sm:flex-1">                      {/* Product Image */}
                       <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
-                        <Image
+                        <SafeImage
                           src={item.product.image}
                           alt={item.product.name}
                           fill

@@ -1,0 +1,36 @@
+<!-- AquaNest Favicon SVG - Premium Water Drop Logo -->
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main water drop shape with gradient -->
+  <defs>
+    <radialGradient id="waterGradient" cx="0.3" cy="0.3" r="0.7">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="50%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#1e40af"/>
+    </radialGradient>
+    <radialGradient id="highlightGradient" cx="0.3" cy="0.3" r="0.8">
+      <stop offset="0%" stop-color="#DBEAFE" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#DBEAFE" stop-opacity="0.3"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Water drop shadow -->
+  <path d="M16 3C16 3 6.5 12.5 6.5 20.5C6.5 25.7467 10.7533 30 16 30C21.2467 30 25.5 25.7467 25.5 20.5C25.5 12.5 16 3 16 3Z" 
+        fill="#1e40af" opacity="0.2" transform="translate(0.5, 0.5)"/>
+  
+  <!-- Main water drop -->
+  <path d="M16 2C16 2 6 12 6 20C6 25.5228 10.4772 30 16 30C21.5228 30 26 25.5228 26 20C26 12 16 2 16 2Z" 
+        fill="url(#waterGradient)"/>
+  
+  <!-- Large highlight -->
+  <ellipse cx="12.5" cy="15" rx="3.5" ry="5" fill="url(#highlightGradient)"/>
+  
+  <!-- Small shine spot -->
+  <circle cx="11.5" cy="12.5" r="1.8" fill="#FFFFFF" opacity="0.8"/>
+  
+  <!-- Tiny bright spot -->
+  <circle cx="10.5" cy="11.5" r="0.8" fill="#FFFFFF"/>
+  
+  <!-- Subtle wave pattern inside -->
+  <path d="M10 18C12 16.5 14 17.5 16 16.5C18 17.5 20 16.5 22 18" 
+        stroke="#FFFFFF" stroke-width="0.5" opacity="0.3" fill="none"/>
+</svg>

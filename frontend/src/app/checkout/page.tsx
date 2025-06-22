@@ -1,16 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ShoppingBag, Truck, CreditCard, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/store/cartStore';
 import { useCheckoutStore } from '@/store/checkoutStore';
+import { useAuth } from '@/contexts/AuthContext';
 import { CartSummary } from '@/components/cart/CartSummary';
 import { ShippingForm } from '@/components/checkout/ShippingForm';
 import { PaymentForm } from '@/components/checkout/PaymentForm';
 import { OrderConfirmation } from '@/components/checkout/OrderConfirmation';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 const steps = [
   { id: 'cart', title: 'Cart', icon: ShoppingBag },
@@ -23,8 +25,37 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { items, itemCount } = useCartStore();
   const { step, setStep } = useCheckoutStore();
+  const { isAuthenticated, user } = useAuth();
   
   const currentStepIndex = steps.findIndex(s => s.id === step);
+
+  // Check authentication on page load
+  useEffect(() => {
+    if (!isAuthenticated) {
+      toast.error('Please log in to place an order');
+      router.push('/auth/login?redirect=/checkout');
+      return;
+    }
+  }, [isAuthenticated, router]);
+  // Don't render anything if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <ShoppingBag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+            Please log in to continue
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            You need to be logged in to place an order.
+          </p>
+          <Button onClick={() => router.push('/auth/login?redirect=/checkout')}>
+            Log In
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // Don't redirect to empty cart if we're on confirmation step
   // or if there's a saved order in session storage (payment just completed)

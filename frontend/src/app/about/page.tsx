@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Award, Users, Droplets, Globe, CheckCircle, Heart, Target, Eye, Clock, Truck, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { SafeImage } from '@/components/ui/SafeImage';
 import { AquaNestDeliveryTimeline } from '@/components/ui/aquanest-delivery-timeline';
 
 export default function AboutPage() {
@@ -69,31 +70,29 @@ export default function AboutPage() {
       icon: <Award className="h-8 w-8 text-yellow-500" />,
       title: 'Excellence',
       description: 'We strive for excellence in everything we do, from water quality to customer service and delivery reliability.'
-    }  ];
-
-  const teamMembers = [
+    }  ];  const teamMembers = [
     {
       name: 'Sarah Johnson',
       role: 'CEO & Founder',
-      image: 'women.png',
+      image: '/women.png',
       bio: 'Former water industry executive with 15+ years of experience in sustainable water solutions.'
     },
     {
       name: 'Michael Chen',
       role: 'CTO',
-      image: 'person.png',
+      image: '/person.png',
       bio: 'Technology leader specializing in logistics optimization and quality assurance systems.'
     },
     {
       name: 'Emma Rodriguez',
       role: 'Head of Operations',
-      image: 'women2.png',
+      image: '/women2.png',
       bio: 'Operations expert ensuring seamless delivery and customer satisfaction across all markets.'
     },
     {
       name: 'David Kim',
       role: 'Quality Director',
-      image: 'person2.png',
+      image: '/person2.png',
       bio: 'Water quality specialist with advanced degrees in environmental science and chemistry.'
     }
   ];
@@ -288,13 +287,13 @@ export default function AboutPage() {
             className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
           >
             {teamMembers.map((member, index) => (
-              <motion.div key={index} variants={fadeInUp}>
-                <Card className="text-center hover:shadow-lg transition-shadow duration-300 bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700">
+              <motion.div key={index} variants={fadeInUp}>                <Card className="text-center hover:shadow-lg transition-shadow duration-300 bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700">
                   <CardHeader>
-                    <img
+                    <SafeImage
                       src={member.image}
                       alt={member.name}
                       className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-2 border-gray-200 dark:border-slate-600"
+                      fallbackSrc="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face"
                     />
                     <CardTitle className="text-xl text-gray-900 dark:text-white">{member.name}</CardTitle>
                     <CardDescription className="text-blue-600 dark:text-blue-400 font-medium">

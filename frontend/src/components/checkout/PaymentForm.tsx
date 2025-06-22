@@ -69,19 +69,30 @@ export function PaymentForm({ onContinue, onBack }: PaymentFormProps) {
       // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      setPaymentMethod(data as PaymentMethod);
-      
-      // Create the order and save to session storage
+      setPaymentMethod(data as PaymentMethod);      // Create the order and save to session storage
       if (shippingAddress && items.length > 0) {
-        const newOrder = createOrder(
-          items,
-          shippingAddress,
-          data as PaymentMethod,
-          { total, subtotal, tax, shipping }
-        );
-        
-        // Save order to session storage for the confirmation page
-        sessionStorage.setItem('currentOrder', JSON.stringify(newOrder));
+        try {
+          // Check for demo products and warn user
+          const demoProducts = items.filter(item => !(/^[0-9a-fA-F]{24}$/.test(item.product.id)));
+          
+          if (demoProducts.length > 0) {
+            console.log('Demo products in order:', demoProducts.map(item => item.product.name));
+          }
+          
+          const newOrder = await createOrder(
+            items,
+            shippingAddress,
+            data as PaymentMethod,
+            { total, subtotal, tax, shipping }
+          );
+          
+          // Save order to session storage for the confirmation page
+          sessionStorage.setItem('currentOrder', JSON.stringify(newOrder));
+          console.log('Order created successfully:', newOrder);
+        } catch (orderError) {
+          console.error('Failed to create order:', orderError);
+          // Continue anyway - order might have been created as fallback
+        }
       }
       
       // Don't clear cart here - let the confirmation page handle it

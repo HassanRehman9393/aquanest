@@ -1,13 +1,19 @@
 {
   "name": "backend",
   "version": "0.0.0",
-  "private": true,
-  "scripts": {
+  "private": true,  "scripts": {
     "start": "node ./bin/www",
-    "dev": "nodemon ./bin/www"
+    "dev": "nodemon ./bin/www",
+    "seed:products": "node scripts/seedProducts.js",
+    "check:products": "node scripts/checkProducts.js",
+    "seed:orders": "node scripts/seedOrders.js",
+    "check:data": "node scripts/checkData.js",
+    "test:analytics": "node scripts/testAnalytics.js",
+    "debug:orders": "node scripts/debugOrders.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.7.0",
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
     "debug": "~2.6.9",

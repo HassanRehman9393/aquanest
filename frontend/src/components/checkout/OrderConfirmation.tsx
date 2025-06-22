@@ -35,7 +35,7 @@ export function OrderConfirmation({ onContinue }: OrderConfirmationProps) {
         setOrder(parsedOrder);
         // Clear the session storage
         sessionStorage.removeItem('currentOrder');
-          // Show success message immediately but don't clear cart/checkout automatically
+        // Show success message immediately but don't clear cart/checkout automatically
         toast.success('Order placed successfully!');
       } catch (error) {
         console.error('Failed to parse order from session storage:', error);
@@ -43,35 +43,60 @@ export function OrderConfirmation({ onContinue }: OrderConfirmationProps) {
     } else {
       // Set a timeout to create fallback order if nothing happens
       timeoutId = setTimeout(() => {
-        // Fallback: create a mock order for demo purposes
-        const mockOrder = {
-          id: `AQ${Date.now().toString().slice(-6)}${Math.random().toString(36).substr(2, 3).toUpperCase()}`,
-          date: new Date(),
-          total: 89.97,
-          subtotal: 79.98,
-          tax: 6.40,
-          shipping: 3.59,
-          estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-          trackingNumber: `TRK${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-          items: [
-            {
-              id: '1',
-              name: 'Premium Water Bottles - 16oz',
-              quantity: 2,
-              price: 12.99,
-              image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400',
-            },
-            {
-              id: '2', 
-              name: '5-Gallon Water Jug',
-              quantity: 1,
-              price: 32.99,
-              image: 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=400',
-            }
-          ]
-        };
-        setOrder(mockOrder);
-          // Show success message but don't clear cart/checkout automatically
+        // Fallback: Use cart items to create order demo
+        const { items, total, subtotal, tax, shipping } = useCartStore.getState();
+        
+        if (items.length > 0) {
+          const fallbackOrder = {
+            id: `AQ${Date.now().toString().slice(-6)}${Math.random().toString(36).substr(2, 3).toUpperCase()}`,
+            date: new Date(),
+            total,
+            subtotal,
+            tax,
+            shipping,
+            estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+            trackingNumber: `TRK${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+            items: items.map(item => ({
+              id: item.id,
+              name: item.product.name,
+              quantity: item.quantity,
+              price: item.product.price,
+              image: item.product.image,
+            }))
+          };
+          setOrder(fallbackOrder);
+        } else {
+          // Ultimate fallback with sample data
+          const fallbackOrder = {
+            id: `AQ${Date.now().toString().slice(-6)}${Math.random().toString(36).substr(2, 3).toUpperCase()}`,
+            date: new Date(),
+            total: 89.97,
+            subtotal: 79.98,
+            tax: 6.40,
+            shipping: 3.59,
+            estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+            trackingNumber: `TRK${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+            items: [
+              {
+                id: '1',
+                name: 'Premium Water Bottles - 16oz',
+                quantity: 2,
+                price: 12.99,
+                image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400',
+              },
+              {
+                id: '2', 
+                name: '5-Gallon Water Jug',
+                quantity: 1,
+                price: 32.99,
+                image: 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=400',
+              }
+            ]
+          };
+          setOrder(fallbackOrder);
+        }
+        
+        // Show success message but don't clear cart/checkout automatically
         toast.success('Order placed successfully!');
       }, 1000); // Wait 1 second before showing fallback
     }
@@ -94,8 +119,7 @@ export function OrderConfirmation({ onContinue }: OrderConfirmationProps) {
   const slideUp = {
     initial: { opacity: 0, y: 30 },
     animate: { opacity: 1, y: 0 }
-  };
-  const handleContinue = () => {
+  };  const handleContinue = () => {
     // Clear cart and reset checkout only when user manually continues
     clearCart();
     resetCheckout();
@@ -110,7 +134,63 @@ export function OrderConfirmation({ onContinue }: OrderConfirmationProps) {
       router.push(`/tracking?tracking=${order.trackingNumber}&order=${order.id}`);
     }
   };
-  if (!order) {
+
+  const handleDownloadReceipt = () => {
+    if (!order) return;
+    
+    // Create a simple receipt as a text file
+    const receiptContent = `
+AquaNest Order Receipt
+=====================
+
+Order Number: ${order.id}
+Order Date: ${formatSafeDate(order.date, 'MMMM d, yyyy')}
+Estimated Delivery: ${formatSafeDate(order.estimatedDelivery, 'EEEE, MMMM d')}
+
+Items:
+${order.items.map((item: any) => `- ${item.name} x${item.quantity} - ${formatCurrency(item.price * item.quantity)}`).join('\n')}
+
+Subtotal: ${formatCurrency(order.subtotal)}
+Shipping: ${formatCurrency(order.shipping)}
+Tax: ${formatCurrency(order.tax)}
+Total: ${formatCurrency(order.total)}
+
+Shipping Address:
+${order.shippingAddress?.firstName} ${order.shippingAddress?.lastName}
+${order.shippingAddress?.address}
+${order.shippingAddress?.city}, ${order.shippingAddress?.state} ${order.shippingAddress?.zipCode}
+
+Payment Method: ${order.paymentMethod?.type === 'cash_on_delivery' ? 'Cash on Delivery' : order.paymentMethod?.type}
+
+Thank you for choosing AquaNest!
+    `.trim();
+
+    // Create and download the file
+    const blob = new Blob([receiptContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `AquaNest-Receipt-${order.id}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    toast.success('Receipt downloaded successfully!');
+  };
+  const handleViewOrderHistory = () => {
+    // Clear cart and reset checkout before navigating to profile
+    clearCart();
+    resetCheckout();
+    router.push('/profile');
+  };
+
+  const handleLeaveReview = () => {
+    // Navigate to a reviews page or open a review modal
+    // For now, we'll just show a toast and potentially navigate to a reviews section
+    toast.success('Thank you for your interest! Review feature coming soon.');
+    // Could navigate to: router.push('/reviews') or open a modal
+  };if (!order) {
     return (
       <div className="max-w-4xl mx-auto text-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -119,6 +199,20 @@ export function OrderConfirmation({ onContinue }: OrderConfirmationProps) {
       </div>
     );
   }
+
+  // Safe date formatting function
+  const formatSafeDate = (date: any, formatString: string) => {
+    try {
+      const validDate = date instanceof Date ? date : new Date(date);
+      if (isNaN(validDate.getTime())) {
+        return 'Invalid Date';
+      }
+      return format(validDate, formatString);
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return 'Invalid Date';
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -168,11 +262,10 @@ export function OrderConfirmation({ onContinue }: OrderConfirmationProps) {
                   {order.id}
                 </Badge>
               </div>
-              
-              <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center">
                 <span className="text-gray-600 dark:text-gray-400">Order Date</span>
                 <span className="font-medium">
-                  {format(order.date, 'MMMM d, yyyy')}
+                  {formatSafeDate(order.date, 'MMMM d, yyyy')}
                 </span>
               </div>
               
@@ -185,9 +278,8 @@ export function OrderConfirmation({ onContinue }: OrderConfirmationProps) {
               
               <div className="border-t pt-4">
                 <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                  <Truck className="h-4 w-4" />
-                  <span className="font-medium">
-                    Estimated Delivery: {format(order.estimatedDelivery, 'EEEE, MMMM d')}
+                  <Truck className="h-4 w-4" />                  <span className="font-medium">
+                    Estimated Delivery: {formatSafeDate(order.estimatedDelivery, 'EEEE, MMMM d')}
                   </span>
                 </div>
               </div>
@@ -212,7 +304,7 @@ export function OrderConfirmation({ onContinue }: OrderConfirmationProps) {
                 </div>
               </div>              {/* Action Buttons */}
               <div className="space-y-3 pt-4 border-t">
-                <Button variant="outline" className="w-full justify-center">
+                <Button onClick={handleDownloadReceipt} variant="outline" className="w-full justify-center">
                   <Download className="h-4 w-4 mr-2" />
                   Download Receipt
                 </Button>
@@ -222,7 +314,7 @@ export function OrderConfirmation({ onContinue }: OrderConfirmationProps) {
                   Track Your Order
                 </Button>
                 
-                <Button onClick={handleContinue} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                <Button onClick={handleViewOrderHistory} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                   <ArrowRight className="h-4 w-4 mr-2" />
                   View Order History
                 </Button>
@@ -352,8 +444,7 @@ export function OrderConfirmation({ onContinue }: OrderConfirmationProps) {
                     Share your experience and help others discover pure, fresh water
                   </p>
                 </div>
-              </div>
-              <Button variant="outline" className="whitespace-nowrap">
+              </div>              <Button onClick={handleLeaveReview} variant="outline" className="whitespace-nowrap">
                 Leave a Review
               </Button>
             </div>

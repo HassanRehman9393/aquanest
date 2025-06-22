@@ -3,10 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "analyze": "cross-env ANALYZE=true next build",
+    "perf-check": "node scripts/performance-check.js",
+    "build:analyze": "pnpm build && pnpm analyze"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
@@ -67,11 +70,13 @@
     "zustand": "^5.0.5"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^15.3.4",
     "@tailwindcss/postcss": "^4",
     "@types/chart.js": "^4.0.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^7.0.3",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.4",
     "typescript": "^5"

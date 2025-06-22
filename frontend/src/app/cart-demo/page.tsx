@@ -1,76 +1,139 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Droplets, Package, Star } from 'lucide-react';
-import Image from 'next/image';
+import { ShoppingCart, Droplets, Package, Star, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { SafeImage } from '@/components/ui/SafeImage';
 import { useCartStore } from '@/store/cartStore';
 import { Product } from '@/types/cart';
 import { formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
-
-const demoProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Premium Water Bottles - 16oz',
-    description: 'Pure, refreshing water in convenient 16oz bottles. Perfect for on-the-go hydration.',
-    price: 12.99,
-    image: 'https://images.unsplash.com/photo-1609840114113-ba0e4cb995c8?w=600&h=400&fit=crop&crop=center',
-    category: 'water',
-    inStock: true,
-    volume: '16oz (8 pack)',
-    features: ['BPA-Free', 'Eco-Friendly', 'Natural Spring Water']
-  },
-  {
-    id: '2',
-    name: '5-Gallon Water Jug',
-    description: 'Standard 5-gallon water jug, ideal for homes and small businesses.',
-    price: 32.99,
-    image: 'https://images.unsplash.com/photo-1527181152855-fc03fc7949c8?w=600&h=400&fit=crop&crop=center',
-    category: 'water',
-    inStock: true,
-    volume: '5 Gallon',
-    features: ['Reusable', 'BPA-Free', 'Natural Spring Water']
-  },
-  {
-    id: '3',
-    name: 'Countertop Water Dispenser',
-    description: 'Compact countertop dispenser with hot and cold water options. Perfect for small spaces.',
-    price: 149.99,
-    image: 'https://images.unsplash.com/photo-1635221875522-f7db5a8a5a5c?w=600&h=400&fit=crop&crop=center',
-    category: 'accessories',
-    inStock: true,
-    features: ['Hot & Cold Water', 'Compact Design', 'Energy Efficient']
-  },
-  {
-    id: '4',
-    name: 'Premium Water Bottles - 12oz',
-    description: 'Pure, refreshing water in convenient 12oz bottles. Perfect for lunch boxes and short trips.',
-    price: 8.99,
-    image: 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=600&h=400&fit=crop&crop=center',
-    category: 'water',
-    inStock: true,
-    volume: '12oz (12 pack)',
-    features: ['BPA-Free', 'Eco-Friendly', 'Purified Water']
-  }
-];
+import { productsAPI } from '@/lib/api';
 
 export default function CartDemoPage() {
   const { addItem, openCart } = useCartStore();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await productsAPI.getProducts({ limit: 4 });
+          // Transform backend products to match frontend Product interface
+        const transformedProducts = response.data.map((product: any) => {
+          // Validate and set product image
+          let productImage = 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=600&h=400&fit=crop&crop=center';
+          
+          if (product.images?.[0]?.url) {
+            try {
+              // Validate URL
+              new URL(product.images[0].url);
+              productImage = product.images[0].url;
+            } catch (error) {
+              console.warn('Invalid image URL for product:', product.name, product.images[0].url);
+              // Keep default image
+            }
+          }
+          
+          return {
+            id: product._id,
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            image: productImage,
+            category: product.category,
+            inStock: product.stock > 0,
+            volume: product.size || product.volume ? `${product.size || product.volume}` : undefined,
+            features: product.features || ['Premium Quality', 'Fast Delivery']
+          };
+        });
+        
+        setProducts(transformedProducts);
+      } catch (error: any) {
+        console.error('Error fetching products:', error);
+        setError('Failed to load products');
+        // Fallback to demo products if API fails
+        setProducts([
+          {
+            id: '1',
+            name: 'Premium Water Bottles - 16oz',
+            description: 'Pure, refreshing water in convenient 16oz bottles. Perfect for on-the-go hydration.',
+            price: 12.99,
+            image: 'https://images.unsplash.com/photo-1609840114113-ba0e4cb995c8?w=600&h=400&fit=crop&crop=center',
+            category: 'water',
+            inStock: true,
+            volume: '16oz (8 pack)',
+            features: ['BPA-Free', 'Eco-Friendly', 'Natural Spring Water']
+          },
+          {
+            id: '2',
+            name: '5-Gallon Water Jug',
+            description: 'Standard 5-gallon water jug, ideal for homes and small businesses.',
+            price: 32.99,
+            image: 'https://images.unsplash.com/photo-1527181152855-fc03fc7949c8?w=600&h=400&fit=crop&crop=center',
+            category: 'water',
+            inStock: true,
+            volume: '5 Gallon',
+            features: ['Reusable', 'BPA-Free', 'Natural Spring Water']
+          },
+          {
+            id: '3',
+            name: 'Countertop Water Dispenser',
+            description: 'Compact countertop dispenser with hot and cold water options. Perfect for small spaces.',
+            price: 149.99,
+            image: 'https://images.unsplash.com/photo-1635221875522-f7db5a8a5a5c?w=600&h=400&fit=crop&crop=center',
+            category: 'accessories',
+            inStock: true,
+            features: ['Hot & Cold Water', 'Compact Design', 'Energy Efficient']
+          },
+          {
+            id: '4',
+            name: 'Premium Water Bottles - 12oz',
+            description: 'Pure, refreshing water in convenient 12oz bottles. Perfect for lunch boxes and short trips.',
+            price: 8.99,
+            image: 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=600&h=400&fit=crop&crop=center',
+            category: 'water',
+            inStock: true,
+            volume: '12oz (12 pack)',
+            features: ['BPA-Free', 'Eco-Friendly', 'Purified Water']
+          }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
   const handleAddToCart = (product: Product) => {
     addItem(product, 1);
     
-    // Show success toast
-    toast.success(`${product.name} added to cart!`, {
-      action: {
-        label: 'View Cart',
-        onClick: () => openCart(),
-      },
-    });
+    // Show success toast with demo warning if it's a demo product
+    const isDemo = !(/^[0-9a-fA-F]{24}$/.test(product.id));
+    
+    if (isDemo) {
+      toast.success(`${product.name} added to cart! (Demo Product)`, {
+        description: 'This is a demo product. Orders with demo products will be saved locally.',
+        action: {
+          label: 'View Cart',
+          onClick: () => openCart(),
+        },
+      });
+    } else {
+      toast.success(`${product.name} added to cart!`, {
+        action: {
+          label: 'View Cart',
+          onClick: () => openCart(),
+        },
+      });
+    }
   };
 
   const fadeInUp = {
@@ -124,35 +187,45 @@ export default function CartDemoPage() {
             </motion.div>
           </motion.div>
         </div>
-      </section>
-
-      {/* Products Grid */}
+      </section>      {/* Products Grid */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial="initial"
-            animate="animate"
-            variants={staggerContainer}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-          >
-            {demoProducts.map((product, index) => (
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center space-y-4">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto" />
+                <p className="text-gray-600 dark:text-gray-400">Loading products...</p>
+              </div>
+            </div>
+          ) : (
+            <motion.div
+              initial="initial"
+              animate="animate"
+              variants={staggerContainer}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            >
+            {products.map((product: Product, index: number) => (
               <motion.div
                 key={product.id}
                 variants={fadeInUp}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                  <div className="relative h-48 overflow-hidden rounded-t-lg">
-                    <Image
+                <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">                  <div className="relative h-48 overflow-hidden rounded-t-lg">
+                    <SafeImage
                       src={product.image}
                       alt={product.name}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-3 right-3">
+                    />                    <div className="absolute top-3 right-3 flex flex-col gap-2">
                       <Badge variant="secondary" className="bg-white/90 text-gray-800">
                         {product.category === 'water' ? 'Water' : 'Accessory'}
                       </Badge>
+                      {/* Demo badge for fallback products */}
+                      {!(/^[0-9a-fA-F]{24}$/.test(product.id)) && (
+                        <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-300">
+                          Demo
+                        </Badge>
+                      )}
                     </div>
                   </div>
                   
@@ -172,9 +245,8 @@ export default function CartDemoPage() {
                       {product.description}
                     </p>
                     
-                    {product.features && (
-                      <div className="flex flex-wrap gap-1">
-                        {product.features.slice(0, 2).map((feature, featureIndex) => (
+                    {product.features && (                      <div className="flex flex-wrap gap-1">
+                        {product.features?.slice(0, 2).map((feature: string, featureIndex: number) => (
                           <Badge key={featureIndex} variant="outline" className="text-xs">
                             {feature}
                           </Badge>
@@ -211,9 +283,9 @@ export default function CartDemoPage() {
                     </div>
                   </CardContent>
                 </Card>
-              </motion.div>
-            ))}
+              </motion.div>            ))}
           </motion.div>
+          )}
         </div>
       </section>
 
@@ -261,12 +333,11 @@ export default function CartDemoPage() {
                 </p>
               </div>
             </div>
-            
-            <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-6">
+              <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-6">
               <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
                 Features to Test:
               </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
                 <div>• Add/remove items from cart</div>
                 <div>• Update quantities</div>
                 <div>• Persistent cart storage</div>
@@ -275,6 +346,20 @@ export default function CartDemoPage() {
                 <div>• Order confirmation with animations</div>
                 <div>• Toast notifications</div>
                 <div>• Responsive cart sidebar</div>
+              </div>
+              
+              <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-white text-xs font-bold">!</span>
+                  </div>
+                  <div>
+                    <h5 className="font-medium text-orange-800 dark:text-orange-200 mb-1">Demo Products Note</h5>
+                    <p className="text-sm text-orange-700 dark:text-orange-300">
+                      Products marked with "Demo" badges are for testing only. Orders containing demo products will be saved locally for demonstration purposes and won't be processed through the backend.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>

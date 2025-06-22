@@ -17,7 +17,10 @@ import {
   Eye,
   MessageCircle,
   Ban,
-  CheckCircle
+  CheckCircle,
+  Loader2,
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -32,108 +35,38 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { adminAPI } from '@/lib/api';
+import { toast } from 'sonner';
 
 interface Customer {
   id: string;
   name: string;
   email: string;
-  phone: string;
-  address: {
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
+  phone?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
   };
   totalOrders: number;
   totalSpent: number;
   averageOrderValue: number;
-  lastOrderDate: Date;
+  lastOrderDate?: Date;
   joinDate: Date;
-  status: 'active' | 'inactive' | 'banned';
-  segment: 'vip' | 'regular' | 'new';
-  orders: {
+  status: 'active' | 'inactive' | 'suspended';
+  segment: 'new' | 'regular' | 'vip' | 'at-risk';
+  isActive: boolean;
+  role: string;
+  orders?: Array<{
     id: string;
     date: Date;
     total: number;
     status: string;
     items: number;
-  }[];
+  }>;
 }
-
-// Mock customer data
-const mockCustomers: Customer[] = [
-  {
-    id: '1',
-    name: 'John Doe',
-    email: 'john@example.com',
-    phone: '+1 (555) 123-4567',
-    address: {
-      street: '123 Main St',
-      city: 'Los Angeles',
-      state: 'CA',
-      zipCode: '90210',
-      country: 'United States'
-    },
-    totalOrders: 12,
-    totalSpent: 1450.50,
-    averageOrderValue: 120.88,
-    lastOrderDate: new Date('2024-01-15'),
-    joinDate: new Date('2023-06-15'),
-    status: 'active',
-    segment: 'vip',
-    orders: [
-      { id: 'ORD001', date: new Date('2024-01-15'), total: 89.99, status: 'delivered', items: 3 },
-      { id: 'ORD002', date: new Date('2024-01-10'), total: 125.50, status: 'delivered', items: 2 },
-    ]
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    phone: '+1 (555) 987-6543',
-    address: {
-      street: '456 Oak Ave',
-      city: 'San Francisco',
-      state: 'CA',
-      zipCode: '94102',
-      country: 'United States'
-    },
-    totalOrders: 8,
-    totalSpent: 680.25,
-    averageOrderValue: 85.03,
-    lastOrderDate: new Date('2024-01-12'),
-    joinDate: new Date('2023-09-20'),
-    status: 'active',
-    segment: 'regular',
-    orders: [
-      { id: 'ORD003', date: new Date('2024-01-12'), total: 65.99, status: 'shipped', items: 1 },
-    ]
-  },
-  {
-    id: '3',
-    name: 'Mike Johnson',
-    email: 'mike@example.com',
-    phone: '+1 (555) 555-0123',
-    address: {
-      street: '789 Pine St',
-      city: 'Seattle',
-      state: 'WA',
-      zipCode: '98101',
-      country: 'United States'
-    },
-    totalOrders: 2,
-    totalSpent: 150.00,
-    averageOrderValue: 75.00,
-    lastOrderDate: new Date('2024-01-08'),
-    joinDate: new Date('2024-01-01'),
-    status: 'active',
-    segment: 'new',
-    orders: [
-      { id: 'ORD004', date: new Date('2024-01-08'), total: 75.00, status: 'processing', items: 2 },
-    ]
-  }
-];
 
 const segmentConfig = {
   vip: { 
@@ -150,6 +83,11 @@ const segmentConfig = {
     label: 'New', 
     color: 'bg-green-100 text-green-800 border-green-200',
     icon: UserPlus
+  },
+  'at-risk': {
+    label: 'At Risk',
+    color: 'bg-orange-100 text-orange-800 border-orange-200',
+    icon: TrendingUp
   }
 };
 
@@ -164,8 +102,8 @@ const statusConfig = {
     color: 'bg-gray-100 text-gray-800 border-gray-200',
     icon: Users
   },
-  banned: { 
-    label: 'Banned', 
+  suspended: { 
+    label: 'Suspended', 
     color: 'bg-red-100 text-red-800 border-red-200',
     icon: Ban
   }
@@ -211,24 +149,23 @@ function CustomerCard({ customer, onStatusUpdate }: CustomerCardProps) {
                 <DropdownMenuItem>
                   <Eye className="h-4 w-4 mr-2" />
                   View Details
-                </DropdownMenuItem>
-                <DropdownMenuItem>
+                </DropdownMenuItem>                <DropdownMenuItem>
                   <MessageCircle className="h-4 w-4 mr-2" />
                   Send Message
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={() => onStatusUpdate(customer.id, customer.status === 'banned' ? 'active' : 'banned')}
-                  className={customer.status === 'banned' ? 'text-green-600' : 'text-red-600'}
+                  onClick={() => onStatusUpdate(customer.id, customer.status === 'active' ? 'suspended' : 'active')}
+                  className={customer.status === 'suspended' ? 'text-green-600' : 'text-red-600'}
                 >
-                  {customer.status === 'banned' ? (
+                  {customer.status === 'suspended' ? (
                     <>
                       <CheckCircle className="h-4 w-4 mr-2" />
-                      Unban Customer
+                      Activate Customer
                     </>
                   ) : (
                     <>
                       <Ban className="h-4 w-4 mr-2" />
-                      Ban Customer
+                      Suspend Customer
                     </>
                   )}
                 </DropdownMenuItem>
@@ -252,7 +189,7 @@ function CustomerCard({ customer, onStatusUpdate }: CustomerCardProps) {
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase tracking-wide">Last Order</p>
-            <p className="font-semibold">{format(customer.lastOrderDate, 'MMM dd')}</p>
+            <p className="font-semibold">{customer.lastOrderDate ? format(customer.lastOrderDate, 'MMM dd') : 'N/A'}</p>
           </div>
         </div>
 
@@ -264,7 +201,7 @@ function CustomerCard({ customer, onStatusUpdate }: CustomerCardProps) {
             </div>
             <div className="flex items-center gap-1">
               <MapPin className="h-4 w-4" />
-              <span>{customer.address.city}, {customer.address.state}</span>
+              <span>{customer.address ? `${customer.address.city}, ${customer.address.state}` : 'No address'}</span>
             </div>
           </div>
           
@@ -345,7 +282,7 @@ function CustomerDetails({ customer }: { customer: Customer }) {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Last Order:</span>
-                  <span className="font-semibold">{format(customer.lastOrderDate, 'MMM dd, yyyy')}</span>
+                  <span className="font-semibold">{customer.lastOrderDate ? format(customer.lastOrderDate, 'MMM dd, yyyy') : 'N/A'}</span>
                 </div>
               </CardContent>
             </Card>
@@ -353,8 +290,7 @@ function CustomerDetails({ customer }: { customer: Customer }) {
         </TabsContent>
 
         <TabsContent value="orders" className="space-y-4">
-          <div className="space-y-3">
-            {customer.orders.map((order) => (
+          <div className="space-y-3">            {customer.orders && customer.orders.length > 0 ? customer.orders.map((order) => (
               <Card key={order.id}>
                 <CardContent className="p-4">
                   <div className="flex justify-between items-center">
@@ -373,7 +309,12 @@ function CustomerDetails({ customer }: { customer: Customer }) {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            )) : (
+              <Card>
+                <CardContent className="p-8 text-center text-gray-500">
+                  No orders found
+                </CardContent>
+              </Card>            )}
           </div>
         </TabsContent>
 
@@ -384,16 +325,21 @@ function CustomerDetails({ customer }: { customer: Customer }) {
                 <MapPin className="h-4 w-4" />
                 Shipping Address
               </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1">
-                <p className="font-medium">{customer.name}</p>
-                <p className="text-sm text-gray-600">{customer.address.street}</p>
-                <p className="text-sm text-gray-600">
-                  {customer.address.city}, {customer.address.state} {customer.address.zipCode}
-                </p>
-                <p className="text-sm text-gray-600">{customer.address.country}</p>
-              </div>
+            </CardHeader>            <CardContent>
+              {customer.address ? (
+                <div className="space-y-1">
+                  <p className="font-medium">{customer.name}</p>
+                  <p className="text-sm text-gray-600">{customer.address.street}</p>
+                  <p className="text-sm text-gray-600">
+                    {customer.address.city}, {customer.address.state} {customer.address.zipCode}
+                  </p>
+                  <p className="text-sm text-gray-600">{customer.address.country}</p>
+                </div>
+              ) : (
+                <div className="p-4 text-center text-gray-500">
+                  No address on file
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -403,17 +349,85 @@ function CustomerDetails({ customer }: { customer: Customer }) {
 }
 
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
-  const [loading, setLoading] = useState(false);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [segmentFilter, setSegmentFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
 
+  // Fetch customers from API
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await adminAPI.getCustomers({ limit: 100 });
+      
+      // Transform backend user data to match our Customer interface
+      const transformedCustomers = response.data.map((user: any) => ({
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        totalOrders: user.orderStats?.totalOrders || 0,
+        totalSpent: user.orderStats?.totalSpent || 0,
+        averageOrderValue: user.orderStats?.averageOrderValue || 0,
+        lastOrderDate: user.orderStats?.lastOrderDate ? new Date(user.orderStats.lastOrderDate) : undefined,
+        joinDate: new Date(user.createdAt),
+        status: user.isActive ? 'active' : 'inactive',
+        segment: determineSegment(user.orderStats),
+        isActive: user.isActive,
+        role: user.role,
+        orders: [] // Would need separate API call to get user orders
+      }));
+      
+      setCustomers(transformedCustomers);
+    } catch (error: any) {
+      console.error('Error fetching customers:', error);
+      setError(error.response?.data?.message || 'Failed to fetch customers');
+      toast.error('Failed to fetch customers');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Determine customer segment based on order stats
+  const determineSegment = (orderStats: any) => {
+    if (!orderStats) return 'new';
+    
+    const totalOrders = orderStats.totalOrders || 0;
+    const totalSpent = orderStats.totalSpent || 0;
+    
+    if (totalOrders >= 10 && totalSpent >= 500) return 'vip';
+    if (totalOrders >= 3) return 'regular';
+    if (totalOrders === 0) return 'new';
+    return 'regular';
+  };
+
+  // Update customer status
+  const handleUpdateStatus = async (customerId: string, isActive: boolean) => {
+    try {
+      await adminAPI.updateUserStatus(customerId, isActive);
+      setCustomers(prev => prev.map(customer =>
+        customer.id === customerId
+          ? { ...customer, isActive, status: isActive ? 'active' : 'inactive' }
+          : customer
+      ));
+      toast.success(`Customer ${isActive ? 'activated' : 'deactivated'} successfully`);
+    } catch (error: any) {
+      toast.error(`Failed to update customer status: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
+  // Refresh data
+  const handleRefresh = () => {
+    fetchCustomers();
+  };
+
   useEffect(() => {
-    // Simulate loading
-    setLoading(true);
-    setTimeout(() => setLoading(false), 1000);
+    fetchCustomers();
   }, []);
 
   useEffect(() => {
@@ -423,7 +437,7 @@ export default function CustomersPage() {
       filtered = filtered.filter(customer =>
         customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.phone.includes(searchTerm)
+        (customer.phone && customer.phone.includes(searchTerm))
       );
     }
 

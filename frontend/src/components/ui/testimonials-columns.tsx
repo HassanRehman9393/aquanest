@@ -2,6 +2,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
+import Image from "next/image";
 
 interface Testimonial {
   text: string;
@@ -53,10 +54,8 @@ export const TestimonialsColumn = (props: {
                         }`}
                       />
                     ))}
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <img
+                  </div>                  <div className="flex items-center gap-3">
+                    <Image
                       width={40}
                       height={40}
                       src={image}

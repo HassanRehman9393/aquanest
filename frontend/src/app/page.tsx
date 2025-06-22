@@ -6,6 +6,7 @@ import { ArrowRight, CheckCircle, Droplets, Clock, Shield, Truck } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CTASection } from '@/components/ui/cta-with-rectangle';
+import Image from 'next/image';
 
 export default function HomePage() {
   const fadeInUp = {
@@ -122,12 +123,14 @@ export default function HomePage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative"
-            >
-                <div className="relative z-10">
-                <img
+            >                <div className="relative z-10">
+                <Image
                   src="/newHero.webp" 
                   alt="Premium water bottles collection"
                   className="rounded-2xl shadow-2xl object-cover w-full h-96"
+                  width={600}
+                  height={384}
+                  priority
                 />
                 </div>
               <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 dark:from-blue-600 dark:to-indigo-700 rounded-2xl transform rotate-3 scale-105 opacity-20 dark:opacity-30"></div>
@@ -196,12 +199,13 @@ export default function HomePage() {
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <img
+              viewport={{ once: true }}            >
+              <Image
                 src="/family_water.jpg"
                 alt="Happy family drinking water"
                 className="rounded-2xl shadow-xl object-cover w-full h-80"
+                width={600}
+                height={320}
               />
             </motion.div>
 

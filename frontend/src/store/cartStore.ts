@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { subscribeWithSelector } from 'zustand/middleware';
 import { Product, CartItem, Cart } from '@/types/cart';
 
 interface CartStore {
@@ -32,125 +33,133 @@ const TAX_RATE = 0.08; // 8% tax
 const SHIPPING_RATE = 5.99; // Flat shipping rate
 const FREE_SHIPPING_THRESHOLD = 50; // Free shipping over $50
 
+// Optimized calculation function
+const calculateCartTotals = (items: CartItem[]) => {
+  const itemCount = items.reduce((total, item) => total + item.quantity, 0);
+  const subtotal = items.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_RATE;
+  const tax = subtotal * TAX_RATE;
+  const total = subtotal + shipping + tax;
+
+  return {
+    itemCount,
+    subtotal: Math.round(subtotal * 100) / 100,
+    shipping: Math.round(shipping * 100) / 100,
+    tax: Math.round(tax * 100) / 100,
+    total: Math.round(total * 100) / 100,
+  };
+};
+
 export const useCartStore = create<CartStore>()(
-  persist(
-    (set, get) => ({
-      // Initial state
-      items: [],
-      isOpen: false,
-      total: 0,
-      itemCount: 0,
-      subtotal: 0,
-      shipping: 0,
-      tax: 0,
+  subscribeWithSelector(
+    persist(
+      (set, get) => ({
+        // Initial state
+        items: [],
+        isOpen: false,
+        total: 0,
+        itemCount: 0,
+        subtotal: 0,
+        shipping: 0,
+        tax: 0,
 
-      // Add item to cart
-      addItem: (product, quantity = 1, options) => {
-        const { items } = get();
-        const existingItemIndex = items.findIndex(
-          item => item.product.id === product.id &&
-          JSON.stringify(item.selectedOptions) === JSON.stringify(options)
-        );
-
-        let newItems: CartItem[];
-
-        if (existingItemIndex >= 0) {
-          // Update existing item quantity
-          newItems = items.map((item, index) =>
-            index === existingItemIndex
-              ? { ...item, quantity: item.quantity + quantity }
-              : item
+        // Add item to cart
+        addItem: (product, quantity = 1, options) => {
+          const { items } = get();
+          const existingItemIndex = items.findIndex(
+            item => item.product.id === product.id &&
+            JSON.stringify(item.selectedOptions) === JSON.stringify(options)
           );
-        } else {
-          // Add new item
-          const newItem: CartItem = {
-            id: `${product.id}-${Date.now()}`,
-            product,
-            quantity,
-            selectedOptions: options,
-          };
-          newItems = [...items, newItem];
-        }
 
-        set({ items: newItems });
-        get().calculateTotals();
-      },
+          let newItems: CartItem[];
 
-      // Remove item from cart
-      removeItem: (itemId) => {
-        const { items } = get();
-        const newItems = items.filter(item => item.id !== itemId);
-        set({ items: newItems });
-        get().calculateTotals();
-      },
+          if (existingItemIndex >= 0) {
+            // Update existing item quantity
+            newItems = items.map((item, index) =>
+              index === existingItemIndex
+                ? { ...item, quantity: item.quantity + quantity }
+                : item
+            );
+          } else {
+            // Add new item
+            const newItem: CartItem = {
+              id: `${product.id}-${Date.now()}`,
+              product,
+              quantity,
+              selectedOptions: options,
+            };
+            newItems = [...items, newItem];
+          }
 
-      // Update item quantity
-      updateQuantity: (itemId, quantity) => {
-        if (quantity <= 0) {
-          get().removeItem(itemId);
-          return;
-        }
+          const totals = calculateCartTotals(newItems);
+          set({ items: newItems, ...totals });
+        },
 
-        const { items } = get();
-        const newItems = items.map(item =>
-          item.id === itemId ? { ...item, quantity } : item
-        );
-        set({ items: newItems });
-        get().calculateTotals();
-      },
+        // Remove item from cart
+        removeItem: (itemId) => {
+          const { items } = get();
+          const newItems = items.filter(item => item.id !== itemId);
+          const totals = calculateCartTotals(newItems);
+          set({ items: newItems, ...totals });
+        },
 
-      // Clear entire cart
-      clearCart: () => {
-        set({ 
-          items: [],
-          total: 0,
-          itemCount: 0,
-          subtotal: 0,
-          shipping: 0,
-          tax: 0
-        });
-      },
+        // Update item quantity
+        updateQuantity: (itemId, quantity) => {
+          if (quantity <= 0) {
+            get().removeItem(itemId);
+            return;
+          }
 
-      // Cart visibility
-      openCart: () => set({ isOpen: true }),
-      closeCart: () => set({ isOpen: false }),
-      toggleCart: () => set(state => ({ isOpen: !state.isOpen })),
+          const { items } = get();
+          const newItems = items.map(item =>
+            item.id === itemId ? { ...item, quantity } : item
+          );
+          const totals = calculateCartTotals(newItems);
+          set({ items: newItems, ...totals });
+        },
 
-      // Get specific item
-      getItem: (productId) => {
-        const { items } = get();
-        return items.find(item => item.product.id === productId);
-      },
+        // Clear entire cart
+        clearCart: () => {
+          set({ 
+            items: [],
+            total: 0,
+            itemCount: 0,
+            subtotal: 0,
+            shipping: 0,
+            tax: 0
+          });
+        },
 
-      // Calculate totals
-      calculateTotals: () => {
-        const { items } = get();
-        
-        const itemCount = items.reduce((total, item) => total + item.quantity, 0);
-        const subtotal = items.reduce((total, item) => total + (item.product.price * item.quantity), 0);
-        const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_RATE;
-        const tax = subtotal * TAX_RATE;
-        const total = subtotal + shipping + tax;
+        // Cart visibility
+        openCart: () => set({ isOpen: true }),
+        closeCart: () => set({ isOpen: false }),
+        toggleCart: () => set(state => ({ isOpen: !state.isOpen })),
 
-        set({
-          itemCount,
-          subtotal: Math.round(subtotal * 100) / 100,
-          shipping: Math.round(shipping * 100) / 100,
-          tax: Math.round(tax * 100) / 100,
-          total: Math.round(total * 100) / 100,
-        });
-      },
-    }),
-    {
-      name: 'aquanest-cart',
-      storage: createJSONStorage(() => localStorage),
-      // Only persist items, recalculate totals on hydration
-      partialize: (state) => ({ items: state.items }),
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          state.calculateTotals();
-        }
-      },
-    }
+        // Get specific item
+        getItem: (productId) => {
+          const { items } = get();
+          return items.find(item => item.product.id === productId);
+        },
+
+        // Calculate totals (kept for backward compatibility)
+        calculateTotals: () => {
+          const { items } = get();
+          const totals = calculateCartTotals(items);
+          set(totals);
+        },
+      }),
+      {
+        name: 'aquanest-cart',
+        storage: createJSONStorage(() => localStorage),
+        // Only persist items, recalculate totals on hydration
+        partialize: (state) => ({ items: state.items }),
+        onRehydrateStorage: () => (state) => {
+          if (state) {
+            const totals = calculateCartTotals(state.items);
+            Object.assign(state, totals);
+          }
+        },
+      }
+    )
   )
 );

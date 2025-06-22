@@ -48,7 +48,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     initializeAuth();
   }, []);
-
   const login = async (credentials: LoginCredentials) => {
     try {
       setIsLoading(true);
@@ -62,6 +61,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(response.user);
       
       toast.success(response.message || 'Login successful!');
+      
+      // Trigger order fetching after successful login
+      // We'll do this by dispatching a custom event that the order store can listen to
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('user-logged-in'));
+      }
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
       toast.error(errorMessage);
@@ -85,9 +90,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const logout = () => {
+  };  const logout = () => {
     // Clear auth data
     localStorage.removeItem('aquanest_token');
     localStorage.removeItem('aquanest_user');
@@ -95,11 +98,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setToken(null);
     setUser(null);
     
+    // Trigger order clearing after logout
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('user-logged-out'));
+    }
+    
     // Optional: Call logout API
     try {
       authAPI.logout();
     } catch (error) {
       // Ignore logout API errors
+    }
+    
+    // Redirect to home page after logout
+    if (typeof window !== 'undefined') {
+      window.location.href = '/';
     }
     
     toast.success('Logged out successfully');

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import {
   TrendingUp,
@@ -14,19 +15,49 @@ import {
   Filter,
   BarChart3
 } from 'lucide-react';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from 'chart.js';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
+
+// Dynamic imports for chart components to reduce initial bundle size
+const DynamicLine = dynamic(() => import('react-chartjs-2').then(mod => ({ default: mod.Line })), {
+  ssr: false,
+  loading: () => <ChartSkeleton />
+});
+const DynamicBar = dynamic(() => import('react-chartjs-2').then(mod => ({ default: mod.Bar })), {
+  ssr: false,
+  loading: () => <ChartSkeleton />
+});
+const DynamicDoughnut = dynamic(() => import('react-chartjs-2').then(mod => ({ default: mod.Doughnut })), {
+  ssr: false,
+  loading: () => <ChartSkeleton />
+});
+
+// Chart.js registration - only load when needed
+const initializeCharts = async () => {
+  const ChartJSModule = await import('chart.js');
+  const {
+    Chart: ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement,
+  } = ChartJSModule;
+
+  ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement
+  );
+};
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,17 +68,17 @@ import { useAdminStore } from '@/store/adminStore';
 import { format, subDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
 import { cn } from '@/lib/utils';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
+// Chart skeleton component for loading states
+function ChartSkeleton() {
+  return (
+    <div className="h-96 flex items-center justify-center bg-gray-50 rounded-lg animate-pulse">
+      <div className="text-center">
+        <div className="h-8 w-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-2"></div>
+        <p className="text-sm text-gray-500">Loading chart...</p>
+      </div>
+    </div>
+  );
+}
 
 interface MetricCardProps {
   title: string;
@@ -101,9 +132,12 @@ export default function AnalyticsPage() {
   const { dashboardStats, statsLoading, fetchDashboardStats } = useAdminStore();
   const [timeRange, setTimeRange] = useState('30days');
   const [chartType, setChartType] = useState('line');
+  const [chartsInitialized, setChartsInitialized] = useState(false);
 
   useEffect(() => {
     fetchDashboardStats();
+    // Initialize charts when component mounts
+    initializeCharts().then(() => setChartsInitialized(true));
   }, [fetchDashboardStats]);
 
   // Chart configurations
@@ -315,16 +349,13 @@ export default function AnalyticsPage() {
                 </SelectContent>
               </Select>
             </CardHeader>
-            <CardContent>
-              <div className="h-96">
-                {statsLoading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  </div>
+            <CardContent>              <div className="h-96">
+                {statsLoading || !chartsInitialized ? (
+                  <ChartSkeleton />
                 ) : chartType === 'line' ? (
-                  <Line data={revenueChartData} options={chartOptions} />
+                  <DynamicLine data={revenueChartData} options={chartOptions} />
                 ) : (
-                  <Bar data={{...revenueChartData, datasets: [{...revenueChartData.datasets[0], backgroundColor: 'rgba(59, 130, 246, 0.8)'}]}} options={chartOptions} />
+                  <DynamicBar data={{...revenueChartData, datasets: [{...revenueChartData.datasets[0], backgroundColor: 'rgba(59, 130, 246, 0.8)'}]}} options={chartOptions} />
                 )}
               </div>
             </CardContent>
@@ -336,14 +367,11 @@ export default function AnalyticsPage() {
             <CardHeader>
               <CardTitle>Orders Over Time</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="h-96">
-                {statsLoading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  </div>
+            <CardContent>              <div className="h-96">
+                {statsLoading || !chartsInitialized ? (
+                  <ChartSkeleton />
                 ) : (
-                  <Bar data={salesChartData} options={chartOptions} />
+                  <DynamicBar data={salesChartData} options={chartOptions} />
                 )}
               </div>
             </CardContent>
@@ -356,14 +384,11 @@ export default function AnalyticsPage() {
               <CardHeader>
                 <CardTitle>Order Status Distribution</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  {statsLoading ? (
-                    <div className="flex items-center justify-center h-full">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    </div>
+              <CardContent>                <div className="h-80">
+                  {statsLoading || !chartsInitialized ? (
+                    <ChartSkeleton />
                   ) : (
-                    <Doughnut data={orderStatusData} options={doughnutOptions} />
+                    <DynamicDoughnut data={orderStatusData} options={doughnutOptions} />
                   )}
                 </div>
               </CardContent>

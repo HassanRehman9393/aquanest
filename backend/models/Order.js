@@ -106,13 +106,21 @@ const orderSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Generate order number
+// Generate order number and tracking number
 orderSchema.pre('save', function(next) {
   if (!this.orderNumber) {
     const timestamp = Date.now().toString();
     const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
     this.orderNumber = `AQ${timestamp.slice(-6)}${random}`;
   }
+  
+  // Generate tracking number if not exists
+  if (!this.trackingNumber) {
+    const timestamp = Date.now().toString();
+    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    this.trackingNumber = `TRK${timestamp.slice(-8)}${random}`;
+  }
+  
   next();
 });
 

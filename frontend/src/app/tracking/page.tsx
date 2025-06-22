@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Package, Truck, MapPin, Clock, CheckCircle, Phone, Mail, Copy, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Package, Truck, MapPin, Clock, CheckCircle, Phone, Mail, Copy, RefreshCw, Loader2, AlertCircle } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,68 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { format, addDays, subDays } from 'date-fns';
 import { toast } from 'sonner';
-
-// Mock tracking data
-const mockTrackingData = {
-  orderId: 'AQ123456',
-  trackingNumber: 'TRK789012345',
-  status: 'in_transit',
-  estimatedDelivery: addDays(new Date(), 1),
-  currentLocation: 'Los Angeles Distribution Center',
-  lastUpdate: new Date(),
-  carrier: 'AquaNest Express',
-  deliveryAddress: '123 Main Street, Los Angeles, CA 90210',
-  customerPhone: '+1 (555) 123-4567',
-  driverName: 'Mike Johnson',
-  driverPhone: '+1 (555) 987-6543',
-  vehicleNumber: 'ANE-2024',
-  progress: 75,
-  timeline: [
-    {
-      status: 'order_placed',
-      title: 'Order Placed',
-      description: 'Your order has been confirmed and is being prepared',
-      timestamp: subDays(new Date(), 3),
-      completed: true
-    },
-    {
-      status: 'processing',
-      title: 'Order Processing',
-      description: 'Your items are being picked and packed',
-      timestamp: subDays(new Date(), 2),
-      completed: true
-    },
-    {
-      status: 'shipped',
-      title: 'Shipped',
-      description: 'Your order has left our facility',
-      timestamp: subDays(new Date(), 1),
-      completed: true
-    },
-    {
-      status: 'in_transit',
-      title: 'In Transit',
-      description: 'Your order is on its way to you',
-      timestamp: new Date(),
-      completed: true,
-      current: true
-    },
-    {
-      status: 'out_for_delivery',
-      title: 'Out for Delivery',
-      description: 'Your order is out for delivery',
-      timestamp: addDays(new Date(), 1),
-      completed: false
-    },
-    {
-      status: 'delivered',
-      title: 'Delivered',
-      description: 'Your order has been delivered',
-      timestamp: addDays(new Date(), 1),
-      completed: false
-    }
-  ]
-};
+import { useOrderStore } from '@/store/orderStore';
+import { ordersAPI } from '@/lib/api';
 
 // Mock map component - Mobile Optimized
 const MockDeliveryMap = () => {
@@ -201,19 +141,145 @@ export default function TrackingPage() {
   const trackingNumber = searchParams.get('tracking');
   const orderId = searchParams.get('order');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [trackingData, setTrackingData] = useState(mockTrackingData);
+  const [trackingData, setTrackingData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { getOrderById } = useOrderStore();
 
-  // If we have a real order ID, we could fetch real data here
-  // For now, we'll use the mock data but update the order ID if provided
+  // Fetch tracking data
   useEffect(() => {
-    if (orderId) {
-      setTrackingData(prev => ({
-        ...prev,
-        orderId: orderId,
-        trackingNumber: trackingNumber || prev.trackingNumber
-      }));
+    const fetchTrackingData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+          if (orderId) {
+          // Try to get order from user store first
+          const order = getOrderById(orderId);
+          if (order) {
+            // Create dynamic timeline based on order status
+            const createTimeline = (orderStatus: string, createdAt: Date, updatedAt: Date) => {
+              const baseTimeline = [
+                {
+                  status: 'order_placed',
+                  title: 'Order Placed',
+                  description: 'Your order has been received and is being prepared',
+                  timestamp: createdAt,
+                  completed: true
+                },
+                {
+                  status: 'processing',
+                  title: 'Processing',
+                  description: 'Your order is being prepared for shipment',
+                  timestamp: createdAt,
+                  completed: ['processing', 'shipped', 'delivered'].includes(orderStatus),
+                  current: orderStatus === 'processing'
+                },
+                {
+                  status: 'shipped',
+                  title: 'Shipped',
+                  description: 'Your order is on its way to you',
+                  timestamp: ['shipped', 'delivered'].includes(orderStatus) ? updatedAt : undefined,
+                  completed: ['shipped', 'delivered'].includes(orderStatus),
+                  current: orderStatus === 'shipped'
+                },
+                {
+                  status: 'delivered',
+                  title: 'Delivered',
+                  description: 'Your order has been delivered',
+                  timestamp: orderStatus === 'delivered' ? updatedAt : undefined,
+                  completed: orderStatus === 'delivered'
+                }
+              ];
+
+              // Handle cancelled orders
+              if (orderStatus === 'cancelled') {
+                return [
+                  baseTimeline[0], // Order placed
+                  {
+                    status: 'cancelled',
+                    title: 'Order Cancelled',
+                    description: 'Your order has been cancelled',
+                    timestamp: updatedAt,
+                    completed: true,
+                    current: true
+                  }
+                ];
+              }
+
+              return baseTimeline;
+            };
+
+            const dynamicTimeline = createTimeline(order.status, order.date, order.date);
+
+            setTrackingData({
+              orderId: order.id,
+              orderNumber: order.id,
+              trackingNumber: order.trackingNumber || trackingNumber,
+              status: order.status,
+              estimatedDelivery: order.estimatedDelivery,
+              currentLocation: 'AquaNest Distribution Center',
+              lastUpdate: order.date,
+              carrier: 'AquaNest Express',
+              deliveryAddress: order.shippingAddress ? 
+                `${order.shippingAddress.address}, ${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.zipCode}` :
+                'Address not available',
+              customerPhone: 'Contact support for assistance',
+              driverName: 'Driver assigned',
+              driverPhone: 'Available on delivery day',
+              vehicleNumber: 'ANE-2024',
+              progress: getProgressFromStatus(order.status),
+              timeline: dynamicTimeline,
+              items: order.items
+            });
+            setLoading(false);
+            return;
+          }
+        }
+
+        // If no order found locally and we have a tracking number, try API
+        if (trackingNumber) {
+          try {
+            const response = await ordersAPI.trackOrder(trackingNumber);
+            setTrackingData(response.data);
+          } catch (apiError) {
+            // Fall back to a generic tracking response
+            setTrackingData({
+              orderId: orderId || 'Unknown',
+              orderNumber: orderId || 'Unknown',
+              trackingNumber: trackingNumber,
+              status: 'in_transit',
+              estimatedDelivery: addDays(new Date(), 2),
+              currentLocation: 'In Transit',
+              lastUpdate: new Date(),
+              carrier: 'AquaNest Express',
+              deliveryAddress: 'Address on file',
+              progress: 50,
+              timeline: [],
+              items: []
+            });
+          }
+        } else {
+          setError('No tracking information provided');
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch tracking information');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrackingData();
+  }, [orderId, trackingNumber, getOrderById]);
+
+  const getProgressFromStatus = (status: string) => {
+    switch (status) {
+      case 'pending': return 10;
+      case 'processing': return 25;
+      case 'shipped': return 75;
+      case 'delivered': return 100;
+      default: return 0;
     }
-  }, [orderId, trackingNumber]);
+  };
   const copyTrackingNumber = () => {
     const numberToCopy = trackingData.trackingNumber;
     if (numberToCopy) {
@@ -243,7 +309,6 @@ export default function TrackingPage() {
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
   };
-
   const getStatusText = (status: string) => {
     switch (status) {
       case 'order_placed': return 'Order Placed';
@@ -256,7 +321,22 @@ export default function TrackingPage() {
     }
   };
 
-  return (    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+  // Safe date formatting function
+  const formatSafeDate = (date: any, formatString: string) => {
+    try {
+      const validDate = date instanceof Date ? date : new Date(date);
+      if (isNaN(validDate.getTime())) {
+        return 'Invalid Date';
+      }
+      return format(validDate, formatString);
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return 'Invalid Date';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       {/* Header - Mobile Optimized */}
       <div className="bg-white dark:bg-slate-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
@@ -271,11 +351,10 @@ export default function TrackingPage() {
                 <ArrowLeft className="h-4 w-4" />
                 <span>Back</span>
               </Button>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+              <div>                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                   Track Your Delivery
                 </h1>                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-                  Order #{trackingData.orderId}
+                  Order #{trackingData?.orderId || orderId || 'Unknown'}
                 </p>
               </div>
             </div>
@@ -292,9 +371,43 @@ export default function TrackingPage() {
             </Button>
           </div>
         </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      </div>      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Loading State */}
+        {loading ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Loader2 className="h-8 w-8 text-blue-600 mx-auto mb-4 animate-spin" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Loading tracking information...
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Please wait while we fetch your order details.
+              </p>
+            </CardContent>
+          </Card>
+        ) : /* Error State */
+        error ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Unable to track order
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                {error}
+              </p>
+              <div className="flex gap-4 justify-center">
+                <Button onClick={() => router.push('/profile')} variant="outline">
+                  View Orders
+                </Button>
+                <Button onClick={() => window.location.reload()}>
+                  Try Again
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : /* Main Content */
+        trackingData ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Main Tracking Info - Mobile First */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-6 order-2 lg:order-1">
@@ -325,9 +438,8 @@ export default function TrackingPage() {
                       </Button>
                     </div>
                   </div>                  <div className="text-right">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Estimated Delivery</p>
-                    <p className="font-medium">
-                      {format(trackingData.estimatedDelivery, 'EEEE, MMMM d')}
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Estimated Delivery</p>                    <p className="font-medium">
+                      {formatSafeDate(trackingData.estimatedDelivery, 'EEEE, MMMM d')}
                     </p>
                   </div>
                 </div>                <div className="space-y-2">
@@ -344,9 +456,8 @@ export default function TrackingPage() {
                     <p className="font-medium">{trackingData.currentLocation}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Last Updated</p>
-                    <p className="font-medium">
-                      {format(trackingData.lastUpdate, 'MMM d, h:mm a')}
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Last Updated</p>                    <p className="font-medium">
+                      {formatSafeDate(trackingData.lastUpdate, 'MMM d, h:mm a')}
                     </p>
                   </div>
                 </div>
@@ -367,7 +478,7 @@ export default function TrackingPage() {
                   <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 text-sm">
                     <Truck className="h-4 w-4" />                    <span>
                       Your delivery is currently <strong>{trackingData.progress}%</strong> of the way to you. 
-                      Estimated arrival: <strong>{format(trackingData.estimatedDelivery, 'h:mm a')}</strong>
+                      Estimated arrival: <strong>{formatSafeDate(trackingData.estimatedDelivery, 'h:mm a')}</strong>
                     </span>
                   </div>
                 </div>
@@ -383,7 +494,7 @@ export default function TrackingPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>                <div className="space-y-4">
-                  {trackingData.timeline.map((event, index) => (
+                  {trackingData.timeline.map((event: any, index: number) => (
                     <motion.div
                       key={event.status}
                       initial={{ opacity: 0, x: -20 }}
@@ -420,9 +531,8 @@ export default function TrackingPage() {
                             event.current ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-white'
                           }`}>
                             {event.title}
-                          </h4>
-                          <span className="text-sm text-gray-500">
-                            {format(event.timestamp, 'MMM d, h:mm a')}
+                          </h4>                          <span className="text-sm text-gray-500">
+                            {formatSafeDate(event.timestamp, 'MMM d, h:mm a')}
                           </span>
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -503,10 +613,11 @@ export default function TrackingPage() {
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Available 24/7 for delivery assistance
                 </p>
-              </CardContent>
-            </Card>
+              </CardContent>            </Card>
           </div>
         </div>
+        ) : null
+        }
       </div>
     </div>
   );

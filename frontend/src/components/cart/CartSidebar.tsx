@@ -3,13 +3,15 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Minus, ShoppingBag, Truck, ArrowRight } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { SafeImage } from '@/components/ui/SafeImage';
 import { useCartStore } from '@/store/cartStore';
+import { useAuth } from '@/contexts/AuthContext';
 import { formatCurrency } from '@/lib/utils';
+import { toast } from 'sonner';
 
 export function CartSidebar() {
   const {
@@ -24,6 +26,20 @@ export function CartSidebar() {
     updateQuantity,
     removeItem
   } = useCartStore();
+  
+  const { isAuthenticated } = useAuth();
+
+  const handleCheckoutClick = (e: React.MouseEvent) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      toast.error('Please log in to proceed to checkout');
+      closeCart();
+      // Redirect to login with checkout redirect
+      window.location.href = '/auth/login?redirect=/checkout';
+      return;
+    }
+    closeCart();
+  };
 
   return (
     <AnimatePresence>
@@ -96,10 +112,9 @@ export function CartSidebar() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, x: -100 }}
                         className="flex gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                      >
-                        {/* Product Image - Mobile Optimized */}
+                      >                        {/* Product Image - Mobile Optimized */}
                         <div className="relative h-14 w-14 sm:h-16 sm:w-16 rounded-md overflow-hidden bg-white flex-shrink-0">
-                          <Image
+                          <SafeImage
                             src={item.product.image}
                             alt={item.product.name}
                             fill
@@ -202,12 +217,10 @@ export function CartSidebar() {
                   <div className="flex justify-between text-base sm:text-lg font-semibold pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
                     <span>Total</span>
                     <span>{formatCurrency(total)}</span>
-                  </div>
-
-                  {/* Checkout Button - Mobile Optimized */}
-                  <Link href="/checkout" onClick={closeCart}>
+                  </div>                  {/* Checkout Button - Mobile Optimized */}
+                  <Link href="/checkout" onClick={handleCheckoutClick}>
                     <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-sm sm:text-base font-semibold">
-                      Proceed to Checkout
+                      {isAuthenticated ? 'Proceed to Checkout' : 'Log In to Checkout'}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>

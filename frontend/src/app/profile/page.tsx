@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Package, Settings, CreditCard, MapPin, Bell, Shield, Heart, Star, Calendar, Truck, Eye, RefreshCw } from 'lucide-react';
+import { User, Package, Settings, CreditCard, MapPin, Bell, Shield, Heart, Star, Calendar, Truck, Eye, RefreshCw, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserStore } from '@/store/userStore';
 import { useOrderStore } from '@/store/orderStore';
+import { Order } from '@/types/cart';
 import { formatCurrency } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
@@ -32,9 +34,32 @@ const getStatusBadge = (status: string) => {
 
 export default function ProfilePage() {
   const { user } = useAuth();
-  const { orders, clearOrders } = useOrderStore();
-  const [activeTab, setActiveTab] = useState('orders');
   const router = useRouter();
+  
+  // Get data from stores
+  const { 
+    stats, 
+    statsLoading, 
+    fetchStats, 
+    cancelOrder, 
+    refresh 
+  } = useUserStore();
+  
+  const {
+    orders,
+    loading: ordersLoading,
+    error: ordersError,
+    fetchOrders
+  } = useOrderStore();
+  const [activeTab, setActiveTab] = useState('orders');
+
+  // Fetch data on component mount
+  useEffect(() => {
+    if (user) {
+      fetchOrders();
+      fetchStats();
+    }
+  }, [user, fetchOrders, fetchStats]);
 
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
@@ -46,9 +71,21 @@ export default function ProfilePage() {
     router.push(`/tracking?tracking=${trackingNumber}&order=${orderId}`);
   };
 
-  const handleClearOrders = () => {
-    clearOrders();
-    toast.success('Order history cleared!');
+  const handleCancelOrder = async (orderId: string) => {
+    try {
+      await cancelOrder(orderId);
+    } catch (error) {
+      // Error is already handled in the store
+    }
+  };
+
+  const handleRefresh = async () => {
+    try {
+      await refresh();
+      toast.success('Data refreshed successfully');
+    } catch (error) {
+      toast.error('Failed to refresh data');
+    }
   };
 
   return (    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
@@ -118,21 +155,56 @@ export default function ProfilePage() {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                   Order History
-                </h2>
-                <div className="flex gap-2 w-full sm:w-auto">
-                  <Button variant="outline" onClick={handleClearOrders} size="sm" className="flex-1 sm:flex-none">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Clear History</span>
-                    <span className="sm:hidden">Clear</span>
+                </h2>                <div className="flex gap-2 w-full sm:w-auto">
+                  <Button 
+                    variant="outline" 
+                    onClick={handleRefresh} 
+                    size="sm" 
+                    className="flex-1 sm:flex-none"
+                    disabled={ordersLoading}
+                  >
+                    <RefreshCw className={`h-4 w-4 mr-2 ${ordersLoading ? 'animate-spin' : ''}`} />
+                    <span className="hidden sm:inline">Refresh</span>
+                    <span className="sm:hidden">Refresh</span>
                   </Button>
                   <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
                     <span className="hidden sm:inline">View All Orders</span>
                     <span className="sm:hidden">All</span>
                   </Button>
-                </div>
-              </div>
+                </div>              </div>
 
-              {orders.length === 0 ? (
+              {/* Loading State */}
+              {ordersLoading ? (
+                <Card className="shadow-lg border-0">
+                  <CardContent className="py-8 sm:py-12 text-center">
+                    <Loader2 className="h-8 w-8 text-blue-600 mx-auto mb-4 animate-spin" />
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      Loading orders...
+                    </h3>
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+                      Please wait while we fetch your order history.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : /* Error State */
+              ordersError ? (
+                <Card className="shadow-lg border-0">
+                  <CardContent className="py-8 sm:py-12 text-center">
+                    <AlertCircle className="h-10 w-10 sm:h-12 sm:w-12 text-red-500 mx-auto mb-4" />
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      Failed to load orders
+                    </h3>
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6">
+                      {ordersError}
+                    </p>
+                    <Button onClick={handleRefresh} size="sm" className="w-full sm:w-auto">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Try Again
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : /* Empty State */
+              orders.length === 0 ? (
                 <Card className="shadow-lg border-0">
                   <CardContent className="py-8 sm:py-12 text-center">
                     <Package className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-4" />
@@ -149,7 +221,7 @@ export default function ProfilePage() {
                 </Card>
               ) : (
                 <div className="grid gap-4 sm:gap-6">
-                  {orders.map((order, index) => (
+                  {orders.map((order: Order, index: number) => (
                     <motion.div
                       key={order.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -163,8 +235,7 @@ export default function ProfilePage() {
                               <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                                 <Package className="h-4 w-4 sm:h-5 sm:w-5" />
                                 Order #{order.id}
-                              </CardTitle>
-                              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              </CardTitle>                              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
                                 Placed on {format(order.date, 'MMM d, yyyy')}
                               </p>
                             </div>
@@ -184,7 +255,7 @@ export default function ProfilePage() {
                                 Items ({order.items.length})
                               </h4>
                               <div className="space-y-2">
-                                {order.items.map((item, itemIndex) => (
+                                {order.items.map((item: any, itemIndex: number) => (
                                   <div key={itemIndex} className="flex justify-between items-start sm:items-center text-xs sm:text-sm">
                                     <span className="text-gray-600 dark:text-gray-400 flex-1 pr-2">
                                       {item.name} × {item.quantity}
@@ -211,42 +282,55 @@ export default function ProfilePage() {
                                 <span className="text-gray-600 dark:text-gray-400">Tax</span>
                                 <span>{formatCurrency(order.tax)}</span>
                               </div>
-                            </div>
-
-                            {/* Delivery Info */}
+                            </div>                            {/* Delivery Info */}
                             <div className="flex items-center justify-between pt-4 border-t">
                               <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                                 {order.status === 'delivered' ? (
                                   <>
                                     <Package className="h-4 w-4" />
                                     <span className="text-sm">
-                                      Delivered on {format(order.estimatedDelivery, 'MMM d, yyyy')}
+                                      {order.estimatedDelivery ? 
+                                        `Delivered on ${format(order.estimatedDelivery, 'MMM d, yyyy')}` :
+                                        'Delivered'
+                                      }
                                     </span>
                                   </>
                                 ) : (
                                   <>
                                     <Truck className="h-4 w-4" />
                                     <span className="text-sm">
-                                      Est. delivery: {format(order.estimatedDelivery, 'MMM d, yyyy')}
+                                      {order.estimatedDelivery ? 
+                                        `Est. delivery: ${format(order.estimatedDelivery, 'MMM d, yyyy')}` :
+                                        'Delivery date pending'
+                                      }
                                     </span>
                                   </>
                                 )}
                               </div>
-                              
-                              <div className="flex gap-2">
-                                {order.trackingNumber && (
+                                <div className="flex gap-2 flex-wrap">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleTrackOrder(order.trackingNumber || 'pending', order.id)}
+                                  className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:border-blue-700 dark:text-blue-300"
+                                >
+                                  <Truck className="h-4 w-4 mr-2" />
+                                  {order.trackingNumber ? 'Track Order' : 'Track Pending'}
+                                </Button>
+                                <Button variant="outline" size="sm">
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  View Details
+                                </Button>
+                                {order.status === 'pending' && (
                                   <Button 
                                     variant="outline" 
                                     size="sm"
-                                    onClick={() => handleTrackOrder(order.trackingNumber!, order.id)}
+                                    onClick={() => handleCancelOrder(order.id)}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
                                   >
-                                    <Truck className="h-4 w-4 mr-2" />
-                                    Track Order
+                                    Cancel Order
                                   </Button>
                                 )}
-                                <Button variant="outline" size="sm">
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  View Details                                </Button>
                               </div>
                             </div>
                           </div>

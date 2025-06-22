@@ -226,11 +226,10 @@ router.get('/analytics', protect, admin, async (req, res, next) => {
             localField: '_id',
             foreignField: '_id',
             as: 'product'
-          }
-        },
+          }        },
         { $unwind: '$product' },
         { $sort: { totalSold: -1 } },
-        { $limit: 10 }
+        { $limit: 5 }
       ]),
 
       // Order status distribution

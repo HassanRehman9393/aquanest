@@ -26,12 +26,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { SafeImage } from '@/components/ui/SafeImage';
 import { useAdminStore } from '@/store/adminStore';
 import { ProductFormData, AdminProduct } from '@/types/admin';
 import { formatCurrency } from '@/lib/utils';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import Image from 'next/image';
 
 function ProductDialog({
   product,
@@ -272,9 +272,8 @@ function ProductCard({ product, onEdit, onDelete }: {
 }) {
   return (
     <Card className="hover:shadow-lg transition-shadow">
-      <div className="relative">
-        <div className="aspect-video relative overflow-hidden rounded-t-lg bg-gray-100 dark:bg-gray-800">
-          <Image
+      <div className="relative">        <div className="aspect-video relative overflow-hidden rounded-t-lg bg-gray-100 dark:bg-gray-800">
+          <SafeImage
             src={product.image}
             alt={product.name}
             fill
@@ -453,7 +452,7 @@ export default function ProductsPage() {
 
       {/* Products Grid */}
       {productsLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(8)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <div className="aspect-video bg-gray-200 dark:bg-gray-700 rounded-t-lg"></div>
@@ -473,7 +472,7 @@ export default function ProductsPage() {
           }}
           initial="initial"
           animate="animate"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {filteredProducts.map((product) => (
             <motion.div key={product.id} variants={fadeInUp}>
