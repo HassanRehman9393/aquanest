@@ -26,8 +26,32 @@ AquaNest is a premium water delivery service that brings fresh, pure water direc
 ## 📸 Application Preview
 
 ### 🏠 Homepage
-![AquaNest Homepage](./Home_Page.png)
+![AquaNest Homepage](./assets/Home_Page.png)
 *Experience our modern, responsive design with smooth animations and intuitive navigation*
+
+### 🛒 Products Catalog
+![Products Page](./assets/Products_Page.png)
+*Browse our extensive collection of water bottles, gallons, and dispensers with smart filtering*
+
+### 🔐 User Authentication
+![Login Page](./assets/Login.png)
+*Secure user authentication with beautiful, responsive login/register forms*
+
+### 📊 Admin Dashboard
+![Admin Dashboard](./assets/AdminDashboard.png)
+*Comprehensive admin panel with real-time analytics, order management, and business insights*
+
+### ℹ️ About Us
+![About Us Page](./assets/AboutUs.png)
+*Learn about our mission, vision, and commitment to delivering pure water*
+
+### ⭐ Customer Testimonials
+![Testimonials Page](./assets/Testimonials.png)
+*Real customer reviews and testimonials showcasing our excellent service*
+
+### 📞 Contact Us
+![Contact Page](./assets/ContactUs.png)
+*Easy-to-use contact form and business information for customer support*
 
 ## ✨ Features
 
@@ -183,13 +207,30 @@ NEXT_PUBLIC_APP_DESCRIPTION=Premium Water Delivery Service
 
 <div align="center">
   
-**🌍 [Live Application](https://your-frontend-url.vercel.app)** | **📚 [API Documentation](./API.md)**
+**🌍 [Live Application](https://aquanest-ochre.vercel.app/)** | **📚 [API Documentation](./API.md)**
 
 *Demo Credentials:*
 - **Customer:** demo@aquanest.com / password123
-- **Admin:** admin@aquanest.com / admin123
+- **Admin:** johndoe@gmail.com / John123
 
 </div>
+
+## 🔑 Admin Dashboard Access
+
+To access the **Admin Dashboard** with full management capabilities:
+
+1. **Visit:** [https://aquanest-ochre.vercel.app/](https://aquanest-ochre.vercel.app/)
+2. **Login with Admin Credentials:**
+   - **Email:** `johndoe@gmail.com`
+   - **Password:** `John123`
+3. **Navigate to:** Admin panel will be accessible after login
+
+**Admin Features:**
+- 📊 Real-time sales analytics and business insights
+- 🏷️ Complete product catalog management (Add/Edit/Delete)
+- 📋 Order management with status tracking
+- 👥 Customer information and order history
+- ⚙️ Business settings and configuration
 
 ## 📱 Application Features
 
