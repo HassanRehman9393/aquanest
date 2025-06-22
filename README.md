@@ -1,7 +1,6 @@
 # 🌊 AquaNest - Premium Water Delivery Service
 
 <div align="center">
-  <img src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&h=400&fit=crop&crop=center" alt="AquaNest Banner" />
   
   **A modern, full-stack water delivery platform built with Next.js and Express.js**
   
@@ -23,6 +22,12 @@ AquaNest is a premium water delivery service that brings fresh, pure water direc
 - **🔒 Secure:** JWT authentication with bcrypt password hashing
 - **⚡ Fast:** Optimized for performance with static generation
 - **☁️ Cloud-Ready:** Deployed on Vercel (frontend) and Railway (backend)
+
+## 📸 Application Preview
+
+### 🏠 Homepage
+![AquaNest Homepage](./Home_Page.png)
+*Experience our modern, responsive design with smooth animations and intuitive navigation*
 
 ## ✨ Features
 
@@ -178,7 +183,7 @@ NEXT_PUBLIC_APP_DESCRIPTION=Premium Water Delivery Service
 
 <div align="center">
   
-**🌍 [Live Application](https://aquanest-frontend.vercel.app)** | **📚 [API Documentation](./API.md)**
+**🌍 [Live Application](https://your-frontend-url.vercel.app)** | **📚 [API Documentation](./API.md)**
 
 *Demo Credentials:*
 - **Customer:** demo@aquanest.com / password123
@@ -186,26 +191,25 @@ NEXT_PUBLIC_APP_DESCRIPTION=Premium Water Delivery Service
 
 </div>
 
-## 📱 Screenshots
+## 📱 Application Features
 
-<div align="center">
-
-### 🏠 Home Page
-<img src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&h=400&fit=crop&crop=center" alt="Homepage Screenshot" width="700"/>
-
-*Beautiful hero section with animated water bottle and company overview*
+### 🏠 Homepage
+- **Hero Section** with animated water bottle and smooth transitions
+- **Company Overview** with mission, vision, and values
+- **Featured Products** carousel with interactive cards
+- **Customer Testimonials** with star ratings and reviews
 
 ### 🛒 Product Catalog
-<img src="https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=800&h=400&fit=crop&crop=center" alt="Products Screenshot" width="700"/>
-
-*Browse our premium water products with smart filtering*
+- **Smart Filtering** by category (bottles, gallons, dispensers)
+- **Search Functionality** with real-time results
+- **Product Details** with high-quality images and descriptions
+- **Add to Cart** with smooth animations and quantity controls
 
 ### 📊 Admin Dashboard
-<img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=400&fit=crop&crop=center" alt="Admin Dashboard Screenshot" width="700"/>
-
-*Comprehensive analytics and management tools*
-
-</div>
+- **Sales Analytics** with interactive charts and graphs
+- **Order Management** with status tracking and updates
+- **Product Management** with CRUD operations
+- **Customer Management** with detailed user profiles
 
 ## 🎨 Key Features Showcase
 
@@ -306,7 +310,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 📧 **Email:** support@aquanest.com
+- 📧 **Email:** hassangill9393@gmail.com
 - 🐛 **Issues:** [GitHub Issues](https://github.com/HassanRehman9393/aquanest/issues)
 - 💬 **Discussions:** [GitHub Discussions](https://github.com/HassanRehman9393/aquanest/discussions)
 
@@ -316,136 +320,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   <p><strong>Made with ❤️ by Hassan Rehman</strong></p>
   <p>⭐ Star this repo if you find it helpful!</p>
 </div>
-│   ├── src/
-│   │   ├── controllers/     # Route handlers
-│   │   ├── models/          # Database models
-│   │   ├── routes/          # API routes
-│   │   └── middleware/      # Custom middleware
-│   └── uploads/             # File uploads
-└── README.md
-```
 
-## 🚀 Quick Start
 
-### Prerequisites
-- Node.js 18+ 
-- MongoDB (local or Atlas)
-- Git
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/aquanest.git
-   cd aquanest
-   ```
-
-2. **Install dependencies**
-   ```bash
-   # Install frontend dependencies
-   cd frontend
-   npm install
-
-   # Install backend dependencies
-   cd ../backend
-   npm install
-   ```
-
-3. **Environment Setup**
-   ```bash
-   # Backend (.env)
-   cd backend
-   cp .env.example .env
-   # Edit .env with your MongoDB connection string and JWT secret
-
-   # Frontend (.env.local)
-   cd ../frontend
-   cp .env.example .env.local
-   # Edit .env.local with your API URL
-   ```
-
-4. **Run the application**
-   ```bash
-   # Start backend (Terminal 1)
-   cd backend
-   npm run dev
-
-   # Start frontend (Terminal 2)
-   cd frontend
-   npm run dev
-   ```
-
-5. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:5000
-
-## 🌐 Deployment
-
-### Live Demo
-- **Frontend:** [https://aquanest.vercel.app](https://aquanest.vercel.app)
-- **Backend API:** [https://aquanest-api.railway.app](https://aquanest-api.railway.app)
-
-### Deployment Platforms
-- **Frontend:** Vercel
-- **Backend:** Railway
-- **Database:** MongoDB Atlas
-
-## 📊 API Documentation
-
-### Base URL
-```
-Production: https://aquanest-api.railway.app/api
-Development: http://localhost:5000/api
-```
-
-### Key Endpoints
-```
-POST /auth/register     - User registration
-POST /auth/login        - User login
-GET  /products          - Get all products
-POST /orders            - Create new order
-GET  /orders/:userId    - Get user orders
-```
-
-For detailed API documentation, see [API.md](./API.md)
-
-## 🎨 Design Features
-
-- **Modern UI/UX** - Clean, professional design with blue/aqua theme
-- **Smooth Animations** - Framer Motion powered transitions and interactions
-- **Mobile-First** - Responsive design optimized for all devices
-- **Accessibility** - WCAG compliant with proper contrast and navigation
-
-## 🔒 Security
-
-- JWT-based authentication
-- Password hashing with bcryptjs
-- Input validation and sanitization
-- CORS protection
-- Rate limiting
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👥 Team
-
-- **Developer:** [Your Name]
-- **Design:** Modern water delivery UX/UI
-- **Timeline:** 3-day development sprint
-
-## 📞 Contact
-
-For questions or support, please contact [your-email@example.com]
-
----
-
-**Built with ❤️ for AquaNest Water Delivery Service**
