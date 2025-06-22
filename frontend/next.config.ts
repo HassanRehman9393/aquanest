@@ -1,10 +1,5 @@
 import type { NextConfig } from "next";
 
-// Bundle analyzer
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-});
-
 const nextConfig: NextConfig = {
   // Performance optimizations
   compress: true,
@@ -56,9 +51,21 @@ const nextConfig: NextConfig = {
 
   // Production optimizations
   productionBrowserSourceMaps: false,
-  
-  // Enable static exports for better performance where possible
+    // Enable static exports for better performance where possible
   trailingSlash: false,
 };
 
-export default withBundleAnalyzer(nextConfig);
+// Only apply bundle analyzer if available and ANALYZE is true
+let finalConfig = nextConfig;
+if (process.env.ANALYZE === 'true') {
+  try {
+    const withBundleAnalyzer = require('@next/bundle-analyzer')({
+      enabled: true,
+    });
+    finalConfig = withBundleAnalyzer(nextConfig);
+  } catch (error) {
+    console.warn('Bundle analyzer not available, skipping...');
+  }
+}
+
+export default finalConfig;
